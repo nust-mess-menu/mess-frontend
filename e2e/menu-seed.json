@@ -1,0 +1,76 @@
+{
+  "week1": {
+    "monday": {
+      "breakfast": ["kulcha", "Chana", "Tea"],
+      "lunch": ["Aloo Palak", "Pickle", "Chapati"],
+      "dinner": ["Mutter Pulao", "Raita"]
+    },
+    "tuesday": {
+      "breakfast": ["ommeltte", "paratha", "Tea"],
+      "lunch": ["Daal Mash", "Salad", "Chapati"],
+      "dinner": ["Chicken achari", "Chapati", "kheer"]
+    },
+    "wednesday": {
+      "breakfast": ["Half & Full Fried Egg", "Paratha", "Tea"],
+      "lunch": ["White Rice", "Pakora Kari", "Pickle"],
+      "dinner": ["Chicken Daleem", "Chapati/naan"]
+    },
+    "thursday": {
+      "breakfast": ["Scrambled Egg", "Paratha", "Tea"],
+      "lunch": ["Daal Kaddu", "Pickle", "Chapati"],
+      "dinner": ["Chicken Biryani", "Raita", "Cold Drink"]
+    },
+    "friday": {
+      "breakfast": ["Bread, Butter & Jam", "Tea"],
+      "lunch": ["White Rice", "Daal Mong", "Pickle"],
+      "dinner": ["Beef Chapli Kabab & Aloo Bhujia & Chapati"]
+    },
+    "saturday": {
+      "breakfast": ["Aloo Paratha", "Yogurt", "Tea"],
+      "lunch": ["Black Channa", "Pickle", "Chapati"],
+      "dinner": ["Chicken Pulao", "Raita"]
+    },
+    "sunday": {
+      "breakfast": ["Halwa Puri", "Channa", "Tea"],
+      "lunch": ["Seasonal Vegetable & Chapati"],
+      "dinner": ["Aloo Cutlets", "Daal Mix", "Chatni", "Chapati"]
+    }
+  },
+  "week2": {
+    "monday": {
+      "breakfast": ["kulcha", "Channa", "Tea"],
+      "lunch": ["Aloo Palak", "Pickle", "Chapati"],
+      "dinner": ["Channa Pulao", "Raita"]
+    },
+    "tuesday": {
+      "breakfast": ["omelette", "Paratha", "Tea"],
+      "lunch": ["Daal Mash", "Salad", "Chapati"],
+      "dinner": ["Chicken achari", "Chapati", "Zarda"]
+    },
+    "wednesday": {
+      "breakfast": ["Half & Full Fried Egg", "Paratha", "Tea"],
+      "lunch": ["Naan", "Pakora Kari", "Pickle"],
+      "dinner": ["murgh chanay", "Chapati/naan"]
+    },
+    "thursday": {
+      "breakfast": ["Egg Onion & Tomato", "Paratha", "Tea"],
+      "lunch": ["Daal Kaddu", "Pickle", "Chapati"],
+      "dinner": ["Chicken Biryani", "Raita", "Cold Drink"]
+    },
+    "friday": {
+      "breakfast": ["French Toast", "Tea"],
+      "lunch": ["White Rice", "Daal Masoor", "Pickle"],
+      "dinner": ["Beef Chapli Kabab & Aloo Bhujia & Chapati"]
+    },
+    "saturday": {
+      "breakfast": ["Aloo Paratha", "Yogurt", "Tea"],
+      "lunch": ["Black Channa", "Pickle", "Chapati"],
+      "dinner": ["Chicken Pulao", "Raita"]
+    },
+    "sunday": {
+      "breakfast": ["Halwa Puri", "Channa", "Tea"],
+      "lunch": ["Seasonal Vegetable & Chapati"],
+      "dinner": ["Chicken Chowmein"]
+    }
+  }
+}

@@ -1,9 +1,50 @@
 import type { NextConfig } from "next";
 
+/**
+ * Static security headers. The Content-Security-Policy is per-request (it
+ * carries a nonce) and is set in src/proxy.ts instead.
+ */
+const securityHeaders = [
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+  },
+  // Google sign-in uses a popup that must be able to message this window back
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+  { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+  { key: "X-DNS-Prefetch-Control", value: "off" },
+];
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  productionBrowserSourceMaps: false,
+  // Self-contained server bundle for small Docker images
+  output: "standalone",
+  async headers() {
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        // Admin pages and the BFF API: never cached, never indexed
+        source: "/admin/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+        ],
+      },
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

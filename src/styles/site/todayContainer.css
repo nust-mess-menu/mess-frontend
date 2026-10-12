@@ -1,0 +1,182 @@
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+td,
+th {
+  border: 1px solid #d7d9dd;
+  text-align: left;
+  padding: 10px 12px;
+}
+
+/* Column widths: Timings is half of the other two equal columns */
+/* If Meals = x and Menu = x, then Timings = x/2 */
+/* Total: x/2 + x + x = 100% → x = 40% */
+#mainContainer th:first-child,
+#mainContainer td:first-child {
+  width: 20%;
+  text-align: left;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Meals and Menu columns - equal width, each 40% */
+#mainContainer th:nth-child(2),
+#mainContainer td:nth-child(2),
+#mainContainer th:nth-child(3),
+#mainContainer td:nth-child(3) {
+  width: 40%;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 576px) {
+  #mainContainer th:first-child,
+  #mainContainer td:first-child {
+    width: 20%;
+    font-size: 0.75rem;
+    padding: 6px 4px;
+  }
+
+  #mainContainer th:nth-child(2),
+  #mainContainer td:nth-child(2),
+  #mainContainer th:nth-child(3),
+  #mainContainer td:nth-child(3) {
+    width: 40%;
+    font-size: 0.85rem;
+  }
+}
+.table-container {
+  max-height: none;
+}
+
+h2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+h2 span {
+  margin-left: 8px; /* Adjust the spacing as needed */
+}
+
+/* Meal info layout for ratings */
+.meal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meal-title {
+  font-weight: 600;
+  color: #30363d;
+}
+
+.meal-items {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.meal-rating {
+  color: #5c646f;
+  font-size: 0.86rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.icon-inline {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.rated-note {
+  font-size: 0.76rem;
+  color: #7a838f;
+}
+
+.meal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Secondary action - reads reviews, no sign-in required */
+.reviews-btn {
+  padding: 4px 10px;
+  background: #ffffff;
+  color: #5c646f;
+  border: 1px solid #d7d9dd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.reviews-btn:hover {
+  background: #f5f6f8;
+  border-color: #bfc4cb;
+  color: #30363d;
+}
+
+.reviews-btn:active {
+  transform: translateY(1px);
+}
+
+.rate-btn {
+  margin-top: 0;
+  padding: 4px 10px;
+  background: #f3f8e7;
+  color: #9bb158;
+  border: 1px solid #c4d796;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+}
+
+.rate-btn:hover {
+  background: #e8f1d1;
+  border-color: #9bb158;
+  color: #7c9341;
+  text-decoration: none;
+}
+
+.rate-btn:active {
+  transform: translateY(1px);
+  background: #dce9bf;
+  color: #6f8438;
+}
+
+/* Mobile responsive for meal info */
+@media (max-width: 576px) {
+  .meal-items {
+    font-size: 0.9rem;
+  }
+
+  .meal-rating {
+    font-size: 0.8rem;
+  }
+
+  .rate-btn,
+  .reviews-btn {
+    font-size: 0.74rem;
+    padding: 3px 8px;
+  }
+
+  .rated-note {
+    font-size: 0.72rem;
+  }
+}

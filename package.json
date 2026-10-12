@@ -6,19 +6,41 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "validate": "npm run typecheck && npm run lint && npm test && npm run build",
+    "e2e:emulators": "docker build -t mess-emu e2e/emulator && docker run -d --rm --name mess-emu -p 8085:8085 -p 9099:9099 mess-emu",
+    "e2e:reset": "./e2e/reset-stack.sh",
+    "e2e:build": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-mess NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo-mess.firebaseapp.com NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 next build",
+    "e2e:start": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-mess NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo-mess.firebaseapp.com NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 next start -p 3000 -H 127.0.0.1"
   },
   "dependencies": {
+    "@firebase/app": "0.16.3",
+    "@firebase/auth": "1.13.7",
+    "@reduxjs/toolkit": "2.13.0",
+    "@userback/widget": "0.3.13",
+    "@vercel/analytics": "2.0.1",
+    "bootstrap": "5.3.0-alpha1",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-redux": "9.3.0",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@playwright/test": "1.64.0",
+    "@types/node": "24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "5.0.4"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
