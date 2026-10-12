@@ -7,9 +7,12 @@ import { useAppDispatch } from "@/lib/site/store";
 
 /**
  * Shared submit flow for the Today and Weekly views: submit, show the thank-you
- * dialog, refresh the menu (bypassing cache) and the meal's reviews.
+ * dialog, and reload the meal's reviews. The menu itself is patched in place
+ * with the exact totals the server returns (see submitMealRating), so no
+ * refetch is needed - and a refetch could hit a backend instance whose cache
+ * is a few seconds behind.
  */
-export function useMealRating(refreshMenu: () => void) {
+export function useMealRating() {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -22,7 +25,6 @@ export function useMealRating(refreshMenu: () => void) {
       onDone();
       setSuccessMessage(comment ? "Thanks! Your rating and review are now live." : "Rating submitted successfully!");
       setShowSuccessModal(true);
-      refreshMenu();
       dispatch(fetchMealComments({ mealId, offset: 0, append: false }));
     } catch (error) {
       // Rejections carry a user-facing message; an expired session has

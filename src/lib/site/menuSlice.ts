@@ -1,18 +1,26 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { apiUrl, errorMessage } from "./api";
 import { getIdTokenSafely } from "./firebase";
 import { sessionExpired } from "./authSlice";
 import { TODAY_KEYS, WEEKLY_KEYS } from "./menuCache";
 import { getItem, getJson, removeItem, setItem } from "./storage";
-import type { TodayMenu, WeeklyMenu } from "./types";
+import type { DaySlots, MealWithRating, TodayMenu, WeeklyMenu } from "./types";
 import type { RootState } from "./store";
 
 /**
- * Menu data with a localStorage cache valid for 1 hour AND the same calendar
- * day. Keys match the original app so returning visitors keep their cache.
+ * Menu data with a stale-while-revalidate localStorage cache.
+ *
+ * - Fresher than FRESH_MS: served from cache, no request at all.
+ * - Older (but same calendar day and under MAX_AGE_MS): painted from cache
+ *   instantly, then refreshed in the background. A failed refresh keeps the
+ *   cached menu on screen instead of replacing it with an error.
+ * - Older than MAX_AGE_MS or from another day: discarded; fetched with a spinner.
+ *
+ * Storage keys match the original app, so returning visitors keep their cache.
  */
 
-const CACHE_TTL = 60 * 60 * 1000;
+const FRESH_MS = 60 * 1000;
+const MAX_AGE_MS = 60 * 60 * 1000;
 const TODAY = TODAY_KEYS;
 const WEEKLY = WEEKLY_KEYS;
 
@@ -23,16 +31,31 @@ export function cleanLegacyCache(): void {
   }
 }
 
-function readCache<T>(keys: typeof TODAY): T | null {
-  const time = Number(getItem(keys.time));
-  if (getItem(keys.date) !== new Date().toDateString() || !time || Date.now() - time >= CACHE_TTL) return null;
-  return getJson<T>(keys.data);
+interface CacheHit<T> {
+  data: T;
+  ageMs: number;
 }
 
-function writeCache(keys: typeof TODAY, data: unknown): void {
+export function readCache<T>(keys: typeof TODAY, isValid: (x: unknown) => x is T, now: number = Date.now()): CacheHit<T> | null {
+  const time = Number(getItem(keys.time));
+  if (getItem(keys.date) !== new Date(now).toDateString() || !time) return null;
+  const ageMs = now - time;
+  if (ageMs < 0 || ageMs >= MAX_AGE_MS) return null;
+  const data = getJson<unknown>(keys.data);
+  return isValid(data) ? { data, ageMs } : null;
+}
+
+function writeCache(keys: typeof TODAY, data: unknown, time: number = Date.now()): void {
   setItem(keys.data, JSON.stringify(data));
-  setItem(keys.time, String(Date.now()));
-  setItem(keys.date, new Date().toDateString());
+  setItem(keys.time, String(time));
+  setItem(keys.date, new Date(time).toDateString());
+}
+
+/** Rewrite cached data in place, keeping its original timestamp. */
+function patchCache<T>(keys: typeof TODAY, isValid: (x: unknown) => x is T, patch: (data: T) => T): void {
+  const time = Number(getItem(keys.time));
+  const data = getJson<unknown>(keys.data);
+  if (time && isValid(data)) writeCache(keys, patch(data), time);
 }
 
 async function authHeaders(state: RootState): Promise<Record<string, string>> {
@@ -42,55 +65,72 @@ async function authHeaders(state: RootState): Promise<Record<string, string>> {
   return idToken ? { Authorization: `Bearer ${idToken}` } : {};
 }
 
-function isToday(x: unknown): x is TodayMenu {
+export function isToday(x: unknown): x is TodayMenu {
   return Boolean(x && typeof x === "object" && "meals" in x && (x as TodayMenu).meals);
 }
-function isWeekly(x: unknown): x is WeeklyMenu {
+export function isWeekly(x: unknown): x is WeeklyMenu {
   return Boolean(x && typeof x === "object" && "menu" in x && (x as WeeklyMenu).menu);
 }
 
-export const fetchTodayMenu = createAsyncThunk<TodayMenu, boolean | void, { state: RootState; rejectValue: string }>(
-  "menu/fetchToday",
-  async (skipCache, { getState, rejectWithValue }) => {
-    try {
-      if (!skipCache) {
-        const cached = readCache<TodayMenu>(TODAY);
-        if (isToday(cached)) return cached;
+/** Shared fetch flow for both views. */
+function menuThunk<T>(
+  type: string,
+  path: string,
+  keys: typeof TODAY,
+  isValid: (x: unknown) => x is T,
+  cached: (data: T) => PayloadAction<T>,
+  failure: string
+) {
+  return createAsyncThunk<T, boolean | void, { state: RootState; rejectValue: string }>(
+    type,
+    async (skipCache, { getState, dispatch, rejectWithValue }) => {
+      const hit = skipCache ? null : readCache(keys, isValid);
+      if (hit && hit.ageMs < FRESH_MS) return hit.data;
+      // Paint the cached copy now; the request below refreshes it
+      if (hit) dispatch(cached(hit.data));
+
+      try {
+        const response = await fetch(apiUrl(path), { headers: await authHeaders(getState()) });
+        if (!response.ok) throw new Error(failure);
+        const data: unknown = await response.json();
+        if (!isValid(data)) throw new Error(failure);
+        writeCache(keys, data);
+        return data;
+      } catch (error) {
+        // Offline or the server is struggling: keep showing what we have
+        if (hit) return hit.data;
+        return rejectWithValue((error as Error).message || failure);
       }
-      const response = await fetch(apiUrl("/api/v2/menu/today"), { headers: await authHeaders(getState()) });
-      if (!response.ok) throw new Error("Failed to fetch today's menu");
-      const data: unknown = await response.json();
-      if (!isToday(data)) throw new Error("Failed to fetch today's menu");
-      writeCache(TODAY, data);
-      return data;
-    } catch (error) {
-      return rejectWithValue((error as Error).message || "Failed to fetch today's menu");
     }
-  }
+  );
+}
+
+export const fetchTodayMenu = menuThunk<TodayMenu>(
+  "menu/fetchToday",
+  "/api/v2/menu/today",
+  TODAY,
+  isToday,
+  (data) => todayCached(data),
+  "Failed to fetch today's menu"
 );
 
-export const fetchWeeklyMenu = createAsyncThunk<WeeklyMenu, boolean | void, { state: RootState; rejectValue: string }>(
+export const fetchWeeklyMenu = menuThunk<WeeklyMenu>(
   "menu/fetchWeekly",
-  async (skipCache, { getState, rejectWithValue }) => {
-    try {
-      if (!skipCache) {
-        const cached = readCache<WeeklyMenu>(WEEKLY);
-        if (isWeekly(cached)) return cached;
-      }
-      const response = await fetch(apiUrl("/api/v2/menu/week"), { headers: await authHeaders(getState()) });
-      if (!response.ok) throw new Error("Failed to fetch weekly menu");
-      const data: unknown = await response.json();
-      if (!isWeekly(data)) throw new Error("Failed to fetch weekly menu");
-      writeCache(WEEKLY, data);
-      return data;
-    } catch (error) {
-      return rejectWithValue((error as Error).message || "Failed to fetch weekly menu");
-    }
-  }
+  "/api/v2/menu/week",
+  WEEKLY,
+  isWeekly,
+  (data) => weeklyCached(data),
+  "Failed to fetch weekly menu"
 );
+
+export interface RatingResult {
+  mealId: string;
+  rating: number;
+  stats: { averageRating: number | null; ratingCount: number; commentCount: number } | null;
+}
 
 export const submitMealRating = createAsyncThunk<
-  unknown,
+  RatingResult,
   { mealId: string; rating: number; comment?: string },
   { state: RootState; rejectValue: string }
 >("menu/submitMealRating", async ({ mealId, rating, comment }, { getState, dispatch, rejectWithValue }) => {
@@ -111,11 +151,61 @@ export const submitMealRating = createAsyncThunk<
       body: JSON.stringify({ mealId, rating, comment }),
     });
     if (!response.ok) throw new Error(await errorMessage(response, "Failed to submit rating"));
-    return await response.json();
+    const data = (await response.json()) as { stats?: RatingResult["stats"] };
+    const stats =
+      data.stats && typeof data.stats.ratingCount === "number" && typeof data.stats.commentCount === "number"
+        ? data.stats
+        : null;
+    const result = { mealId, rating, stats };
+    // Keep the stored copies consistent so a reload shows the same numbers
+    patchCache(TODAY, isToday, (m) => applyRatingToToday(m, result));
+    patchCache(WEEKLY, isWeekly, (m) => applyRatingToWeek(m, result));
+    return result;
   } catch (error) {
     return rejectWithValue((error as Error).message || "Failed to submit rating");
   }
 });
+
+/**
+ * Apply a just-submitted rating to every place the meal appears.
+ *
+ * The totals come straight from the server's write transaction, so they are
+ * exact. Refetching the menu instead could land on a backend instance whose
+ * cache has not caught up yet and briefly show the old average.
+ */
+function applyRating(slot: MealWithRating | null, result: RatingResult): MealWithRating | null {
+  if (!slot || slot.mealId !== result.mealId) return slot;
+  return {
+    ...slot,
+    userRating: result.rating,
+    ...(result.stats
+      ? {
+          averageRating: result.stats.averageRating,
+          ratingCount: result.stats.ratingCount,
+          commentCount: result.stats.commentCount,
+        }
+      : {}),
+  };
+}
+
+function applyToDay(day: DaySlots, result: RatingResult): DaySlots {
+  return {
+    breakfast: applyRating(day.breakfast, result),
+    lunch: applyRating(day.lunch, result),
+    dinner: applyRating(day.dinner, result),
+  };
+}
+
+export function applyRatingToToday(menu: TodayMenu, result: RatingResult): TodayMenu {
+  return { ...menu, meals: applyToDay(menu.meals, result) };
+}
+
+export function applyRatingToWeek(menu: WeeklyMenu, result: RatingResult): WeeklyMenu {
+  const days = Object.fromEntries(
+    Object.entries(menu.menu).map(([day, slots]) => [day, applyToDay(slots, result)])
+  ) as WeeklyMenu["menu"];
+  return { ...menu, menu: days };
+}
 
 interface MenuState {
   todayMenu: TodayMenu | null;
@@ -148,6 +238,12 @@ const menuSlice = createSlice({
       state.weeklyError = null;
       state.ratingsError = null;
     },
+    todayCached: (state, action: PayloadAction<TodayMenu>) => {
+      state.todayMenu = action.payload;
+    },
+    weeklyCached: (state, action: PayloadAction<WeeklyMenu>) => {
+      state.weeklyMenu = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -179,8 +275,10 @@ const menuSlice = createSlice({
         state.ratingsLoading = true;
         state.ratingsError = null;
       })
-      .addCase(submitMealRating.fulfilled, (state) => {
+      .addCase(submitMealRating.fulfilled, (state, action) => {
         state.ratingsLoading = false;
+        if (state.todayMenu) state.todayMenu = applyRatingToToday(state.todayMenu, action.payload);
+        if (state.weeklyMenu) state.weeklyMenu = applyRatingToWeek(state.weeklyMenu, action.payload);
       })
       .addCase(submitMealRating.rejected, (state, action) => {
         state.ratingsLoading = false;
@@ -189,4 +287,5 @@ const menuSlice = createSlice({
   },
 });
 
+const { todayCached, weeklyCached } = menuSlice.actions;
 export const menuReducer = menuSlice.reducer;

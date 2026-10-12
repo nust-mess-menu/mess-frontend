@@ -62,3 +62,33 @@ test("unknown URLs get the site's own 404 page", async ({ page, cspViolations })
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Nust Mess Menu" })).toBeVisible();
 });
+
+test("caching: HTML never cached, hashed assets immutable, public files cached a day", async ({ page, request, cspViolations }) => {
+  void cspViolations;
+  const html = await request.get("/");
+  expect(html.headers()["cache-control"]).toMatch(/no-store/);
+
+  const assets: string[] = [];
+  page.on("response", (r) => {
+    if (r.url().includes("/_next/static/")) assets.push(r.headers()["cache-control"] ?? "");
+  });
+  await page.goto("/");
+  await expect(page.locator("#mainContainer")).toBeVisible();
+  expect(assets.length).toBeGreaterThan(0);
+  for (const value of assets) expect(value).toContain("immutable");
+
+  for (const path of ["/avatars/avatar-1.png", "/android-chrome-192x192.png", "/images/feedback-icon.png"]) {
+    expect((await request.get(path)).headers()["cache-control"]).toBe("public, max-age=86400, stale-while-revalidate=604800");
+  }
+});
+
+test("caching: anonymous menu API responses are shareable and revalidate with 304", async ({ request, cspViolations }) => {
+  void cspViolations;
+  const api = "http://127.0.0.1:8080/api/v2/menu/today";
+  const first = await request.get(api);
+  expect(first.headers()["cache-control"]).toContain("s-maxage=60");
+  const etag = first.headers()["etag"];
+  expect(etag).toMatch(/^W\//);
+  const second = await request.get(api, { headers: { "If-None-Match": etag } });
+  expect(second.status()).toBe(304);
+});

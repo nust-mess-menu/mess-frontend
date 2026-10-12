@@ -11,7 +11,8 @@ const mealBody = z.object({
 
 /** GET /api/admin/meals - the meal library */
 export function GET(request: NextRequest) {
-  return adminRoute(request, { mutation: false }, () => callBackend("GET", "/api/meals/list"));
+  // The admin endpoint reads fresh; the public list is CDN- and memory-cached
+  return adminRoute(request, { mutation: false }, () => callBackend("GET", "/api/admin/meals"));
 }
 
 /** POST /api/admin/meals { items, name?, category?, mealId? } - create or update */

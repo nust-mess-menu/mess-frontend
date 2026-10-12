@@ -143,3 +143,26 @@ test("sign out ends the session server-side for this browser", async ({ page, cs
   const res = await page.request.get("/api/admin/week");
   expect(res.status()).toBe(401);
 });
+
+test("an admin edit reaches a student straight away", async ({ page, browser, cspViolations }) => {
+  void cspViolations;
+  await adminLogin(page);
+  const today = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Karachi", weekday: "long" }).format(new Date());
+  await expect(page.locator(".adm-weekcard-value")).toHaveText(/Week \d/);
+  const live = (await page.locator(".adm-weekcard-value").textContent())!.trim().replace("Week ", "");
+  await page.getByRole("radio", { name: new RegExp(`Week ${live}`) }).click();
+  await page.getByRole("button", { name: `Edit Week ${live} · ${today} · Lunch` }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("radio", { name: "Enter dishes" }).click();
+  const input = dialog.getByLabel(/Dishes/);
+  await input.fill("Freshness Test Pulao");
+  await input.press("Enter");
+  await dialog.getByRole("button", { name: "Save slot" }).click();
+  await expect(page.getByText(/updated\.$/)).toBeVisible();
+
+  // A student opening the site now (no local cache) sees the new lunch
+  const student = await browser.newPage();
+  await student.goto("/");
+  await expect(student.locator("#mainContainer tbody tr").nth(1)).toContainText("Freshness Test Pulao");
+  await student.close();
+});

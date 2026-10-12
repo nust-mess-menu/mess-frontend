@@ -26,8 +26,21 @@ const nextConfig: NextConfig = {
   // Self-contained server bundle for small Docker images
   output: "standalone",
   async headers() {
+    // Public files are not content-hashed, so they get a day of caching plus a
+    // week of stale-while-revalidate (build assets under /_next/static are
+    // hashed and Next.js already marks them immutable). HTML is never cached:
+    // every page carries a per-request CSP nonce.
+    const publicAsset = [
+      { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+    ];
     return [
       { source: "/:path*", headers: securityHeaders },
+      { source: "/avatars/:path*", headers: publicAsset },
+      { source: "/images/:path*", headers: publicAsset },
+      {
+        source: "/:file(favicon.ico|favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-384x384.png|mstile-150x150.png|site.webmanifest|browserconfig.xml|robots.txt)",
+        headers: publicAsset,
+      },
       {
         // Admin pages and the BFF API: never cached, never indexed
         source: "/admin/:path*",

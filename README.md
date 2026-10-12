@@ -76,6 +76,21 @@ Known limits:
 - Sign-in throttling and session revocation are per server instance, held in memory. Use a shared store such as Redis or Vercel KV if you run many instances and want those limits applied globally.
 - `style-src` allows `'unsafe-inline'`, because React's server-rendered `style=""` attributes can't be covered by a nonce. Inline styles can't execute code.
 
+## Caching
+
+| What | Policy |
+|---|---|
+| HTML pages | `no-store`. Every page carries a per-request CSP nonce, so it must never be reused. |
+| `/_next/static/*` (JS, CSS, fonts) | Content-hashed, `immutable`. |
+| Public files (icons, avatars, images) | `public, max-age=86400, stale-while-revalidate=604800`. |
+| Menus in the browser | localStorage stale-while-revalidate, using the same keys as the original app. Under 60 s old it's served with no request. Up to 1 hour (same day) it's painted instantly and refreshed in the background, and a failed refresh keeps the cached menu instead of showing an error. Older than that it's refetched. |
+| After a rating | The menu is patched in place, in memory and in localStorage, with the exact totals returned by the server's write. There's no refetch, which could land on a backend instance whose cache is a few seconds behind. |
+| Reviews | Never cached locally. They're refetched each time a meal's reviews are opened. |
+| Admin console and `/api/admin/*` | `no-store`. The backend serves admin reads fresh, bypassing its caches. |
+| Sign-in / sign-out | Cached menus are cleared, because they contain the previous user's own ratings. |
+
+Combined with the backend (CDN ≤ 60 s, memory ≤ 60 s), an admin's edit reaches every student within about 2 minutes, and immediately for anyone without a cached copy.
+
 ## Tests
 
 ```bash

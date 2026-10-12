@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { fetchTodayMenu } from "@/lib/site/menuSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/site/store";
+import { useAppSelector } from "@/lib/site/store";
 import type { DaySlots, MealType, MealWithRating } from "@/lib/site/types";
 import MealRatingModal from "./MealRatingModal";
 import { StarIcon, useMealRating } from "./useMealRating";
@@ -10,9 +9,8 @@ import { StarIcon, useMealRating } from "./useMealRating";
 export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNumber: number; day: string }) {
   const [isActive, setIsActive] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState<{ mealType: MealType; tab: "rate" | "reviews" } | null>(null);
-  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
-  const { isSubmitting, submit, successModal } = useMealRating(() => dispatch(fetchTodayMenu(true)));
+  const { isSubmitting, submit, successModal } = useMealRating();
 
   const currentDate = new Date();
   const currentFormattedDate = currentDate.toLocaleDateString("en-US", {

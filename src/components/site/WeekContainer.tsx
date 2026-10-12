@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { fetchWeeklyMenu } from "@/lib/site/menuSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/site/store";
+import { useAppSelector } from "@/lib/site/store";
 import type { DayOfWeek, DaySlots, MealType, MealWithRating } from "@/lib/site/types";
 import MealRatingModal from "./MealRatingModal";
 import { StarIcon, useMealRating } from "./useMealRating";
@@ -66,9 +65,8 @@ export default function WeekContainer({
     mealType: MealType;
     tab: "rate" | "reviews";
   } | null>(null);
-  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
-  const { isSubmitting, submit, successModal } = useMealRating(() => dispatch(fetchWeeklyMenu(true)));
+  const { isSubmitting, submit, successModal } = useMealRating();
 
   const { monday, weekRange, todayKey } = useMemo(() => {
     const now = new Date();
