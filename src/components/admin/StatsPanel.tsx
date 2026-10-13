@@ -145,7 +145,7 @@ export default function StatsPanel() {
           aria-hidden="true"
         >
           <span>{nf.format(max)}</span>
-          <span>{nf.format(Math.round(max / 2))}</span>
+          <span>{nf.format(max / 2)}</span>
           <span>0</span>
         </div>
         <div className="relative flex items-end gap-0.5 border-b border-adm-border-strong bg-[linear-gradient(var(--color-adm-border)_1px,transparent_1px)] [background-size:100%_50%]">

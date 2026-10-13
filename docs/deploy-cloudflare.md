@@ -3,8 +3,8 @@
 The frontend runs on Cloudflare Workers through the OpenNext adapter
 (`@opennextjs/cloudflare`):
 
-- **Student site:** `https://mess-menu.taaha.dev`
-- **Admin console:** `https://mess-menu-admin.taaha.dev`. It has its own host, so student-side
+- **Student site:** `https://eat.taaha.dev`
+- **Admin console:** `https://eat-admin.taaha.dev`. It has its own host, so student-side
   scripts never share the admin's origin.
 - **Backend:** `https://mess-menu-backend.taaha.dev` (Heroku)
 
@@ -38,7 +38,7 @@ npx wrangler secret put SESSION_SECRET           # openssl rand -base64 48
 On the backend, allow the site origin (already done):
 
 ```bash
-heroku config:set FRONTEND_URL=https://mess-menu.taaha.dev,... -a nust-mess-backend
+heroku config:set FRONTEND_URL=https://eat.taaha.dev,... -a nust-mess-backend
 ```
 
 ## Deploy
@@ -75,3 +75,20 @@ custom domain, and the admin console returns 404 locally.
   without it the server and browser renders would disagree.
 - **Per-instance memory:** sign-in throttling and session revocation live in memory per
   Worker instance. That's fine for one admin. Move them to Workers KV if that changes.
+
+## Adding another domain (e.g. eat.deeznust.com)
+
+A Workers custom domain must belong to a zone in **this** Cloudflare account.
+1. Add `deeznust.com` to this account (free plan), or have its owner add you as a member of their account.
+   Then point the domain's nameservers at Cloudflare.
+2. Add `{ "pattern": "eat.deeznust.com", "custom_domain": true }` to `routes` in `wrangler.jsonc`.
+   If it becomes the main site, set `SITE_URL` to it as well.
+3. Append the origin to the backend's `FRONTEND_URL` on Heroku.
+4. Add the domain to Firebase Auth's authorized domains and to Userback's domains.
+5. Run `npm run cf:deploy`.
+
+## Outside Cloudflare, per domain
+
+- **Firebase Console** → Authentication → Settings → Authorized domains: add the
+  site domain, or Google sign-in fails with `auth/unauthorized-domain`.
+- **Userback** → Site settings → Domains: add the site domain, or the report widget won't load.

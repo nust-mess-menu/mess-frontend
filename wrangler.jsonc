@@ -11,8 +11,8 @@
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "mess-frontend" }],
   // Student site and admin console on separate hosts (see README: recommended layout)
   "routes": [
-    { "pattern": "mess-menu.taaha.dev", "custom_domain": true },
-    { "pattern": "mess-menu-admin.taaha.dev", "custom_domain": true }
+    { "pattern": "eat.taaha.dev", "custom_domain": true },
+    { "pattern": "eat-admin.taaha.dev", "custom_domain": true }
   ],
   "workers_dev": false,
   "preview_urls": false,
@@ -23,8 +23,8 @@
     // Next.js inlines NODE_ENV into page code but not into the Node middleware
     // bundle on Workers; without this the proxy would run in development mode
     "NODE_ENV": "production",
-    "ADMIN_URL": "https://mess-menu-admin.taaha.dev",
-    "SITE_URL": "https://mess-menu.taaha.dev",
+    "ADMIN_URL": "https://eat-admin.taaha.dev",
+    "SITE_URL": "https://eat.taaha.dev",
     "BACKEND_URL": "https://mess-menu-backend.taaha.dev",
     "TRUSTED_PROXY_HOPS": "cloudflare"
   }
