@@ -6,17 +6,21 @@ import { useAppDispatch, useAppSelector } from "@/lib/site/store";
 import AnnouncementPopup from "./AnnouncementPopup";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
+import ReportProblem from "./ReportProblem";
 import TodayContainer from "./TodayContainer";
 import WeekContainer from "./WeekContainer";
 
 function Shell({ children }: { children: ReactNode }) {
   return (
-    <>
+    <div className="site-shell">
       <AnnouncementPopup />
       <Navbar />
-      {children}
-      <Footer />
-    </>
+      <main className="site-main">{children}</main>
+      <div className="site-bottom">
+        <ReportProblem />
+        <Footer />
+      </div>
+    </div>
   );
 }
 

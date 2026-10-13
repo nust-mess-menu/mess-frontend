@@ -6,7 +6,7 @@
  * stacked cards that open in place, so the full menu, ratings and actions have
  * room to breathe at every screen size.
  *
- * Palette matches the rest of the app: olive #9bb158, hairline #e6e8ec borders,
+ * Palette matches the rest of the app: olive #9bb158, #aab2bc card borders,
  * neutral greys, 8px radii.
  */
 
@@ -44,7 +44,7 @@
   font-weight: 600;
   color: #4d545d;
   background: #ffffff;
-  border: 1px solid #d7d9dd;
+  border: 1px solid #9aa3ad;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
@@ -72,7 +72,7 @@
 }
 
 .day-card {
-  border: 1px solid #e6e8ec;
+  border: 1px solid #aab2bc;
   border-radius: 8px;
   background: #ffffff;
   overflow: hidden;
@@ -80,13 +80,14 @@
 }
 
 .day-card.is-open {
-  border-color: #d7dbe0;
-  box-shadow: 0 1px 3px rgba(20, 24, 30, 0.06);
+  border-color: #8f99a4;
+  box-shadow: 0 3px 10px rgba(20, 24, 30, 0.12);
 }
 
 /* Today gets a quiet olive edge rather than a loud fill */
 .day-card.is-today {
-  border-left: 3px solid #9bb158;
+  border-color: #9bb158;
+  border-left: 4px solid #9bb158;
 }
 
 /* ---------- Day header (the toggle) ---------- */
@@ -181,8 +182,8 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: #eceef1; /* shows through as hairline dividers */
-  border-top: 1px solid #eceef1;
+  background: #c3c9d0; /* shows through as dividers between meals */
+  border-top: 1px solid #c3c9d0;
   animation: day-panel-open 0.18s ease-out;
 }
 
@@ -281,8 +282,8 @@
 .rate-btn-sm {
   padding: 5px 11px;
   background: #f3f8e7;
-  color: #7c9341;
-  border: 1px solid #c4d796;
+  color: #6f8438;
+  border: 1px solid #8fab55;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.75rem;
@@ -306,8 +307,8 @@
 .reviews-btn-sm {
   padding: 5px 11px;
   background: #ffffff;
-  color: #5c646f;
-  border: 1px solid #d7d9dd;
+  color: #4a525c;
+  border: 1px solid #9aa3ad;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.75rem;

@@ -15,6 +15,8 @@ import "@/styles/site/mealModal.css";
 import "@/styles/site/comments.css";
 import "@/styles/site/WeekContainer.css";
 import "@/styles/site/popups.css";
+import "@/styles/site/reportProblem.css";
+import "@/styles/site/report.css";
 
 // Self-hosted at build time: no request to Google Fonts from the browser.
 // Regular weight only, exactly like the original's Google Fonts link.

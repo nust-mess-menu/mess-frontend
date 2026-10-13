@@ -11,7 +11,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    value: "camera=(), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
   },
   // Google sign-in uses a popup that must be able to message this window back
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },

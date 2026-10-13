@@ -2,12 +2,11 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Provider } from "react-redux";
-import { publicEnv } from "@/lib/publicEnv";
 import { restoreSession, watchAuthState } from "@/lib/site/authSlice";
+import { checkIn } from "@/lib/site/checkin";
+import { startFeedback } from "@/lib/site/feedback";
 import { cleanLegacyCache } from "@/lib/site/menuSlice";
 import { makeStore } from "@/lib/site/store";
-
-let userbackStarted = false;
 
 /**
  * Store + one-time app startup (what the original App component did):
@@ -22,15 +21,11 @@ export default function Providers({ children }: { children: ReactNode }) {
     store.dispatch(restoreSession());
     const unsubscribe = store.dispatch(watchAuthState());
 
-    // Feedback widget (bottom-left), loaded only when configured
-    if (publicEnv.userbackToken && !userbackStarted) {
-      userbackStarted = true;
-      import("@userback/widget")
-        .then(({ default: Userback }) => Userback(publicEnv.userbackToken))
-        .catch(() => {
-          userbackStarted = false;
-        });
-    }
+    // Problem-report widget, loaded in the background so the link opens instantly
+    startFeedback();
+
+    // Once-a-day visit count for the admin stats
+    void checkIn();
 
     return unsubscribe;
   }, [store]);

@@ -6,8 +6,9 @@ export const metadata = { title: "Page not found - Mess Menu - NUST Hostels" };
 
 export default function NotFound() {
   return (
-    <>
+    <div className="site-shell">
       <Navbar />
+      <main className="site-main">
       <div className="container my-4">
         <div className="alert alert-info" role="alert">
           <h4 className="alert-heading">Page not found</h4>
@@ -17,7 +18,8 @@ export default function NotFound() {
           </Link>
         </div>
       </div>
+      </main>
       <Footer />
-    </>
+    </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { getAvatarForId } from "@/lib/site/avatars";
+import { isFeedbackConfigured, openFeedback } from "@/lib/site/feedback";
 import { useAppSelector } from "@/lib/site/store";
 import MealComments from "./MealComments";
 
@@ -124,7 +125,7 @@ export default function MealRatingModal({
       >
         <header className="meal-modal-header">
           <div className="meal-modal-heading">
-            <p className="meal-modal-eyebrow">Meal feedback</p>
+            <p className="meal-modal-eyebrow">Meal reviews</p>
             <h2 className="meal-modal-title" id="meal-modal-title">
               {mealName}
             </h2>
@@ -146,7 +147,7 @@ export default function MealRatingModal({
           </div>
         )}
 
-        <div className="meal-tabs" role="tablist" aria-label="Meal feedback sections">
+        <div className="meal-tabs" role="tablist" aria-label="Meal review sections">
           <button
             type="button"
             role="tab"
@@ -258,12 +259,29 @@ export default function MealRatingModal({
                       disabled={isSubmitting}
                     />
                     <div className="rate-meta">
-                      <span className="rate-hint">Visible to everyone using the menu.</span>
+                      <span className="rate-hint">Public, about the food. Visible to everyone using the menu.</span>
                       <span className={`rate-counter ${comment.length > MAX_COMMENT_LENGTH - 50 ? "is-near-limit" : ""}`}>
                         {comment.length}/{MAX_COMMENT_LENGTH}
                       </span>
                     </div>
                   </div>
+
+                  {isFeedbackConfigured() && (
+                    <p className="rate-report">
+                      Wrong menu or something broken?{" "}
+                      <button
+                        type="button"
+                        className="rate-report-link"
+                        onClick={() => {
+                          onClose();
+                          openFeedback();
+                        }}
+                      >
+                        Report it privately
+                      </button>{" "}
+                      instead.
+                    </p>
+                  )}
 
                   {validationError && (
                     <p className="rate-error" role="alert">

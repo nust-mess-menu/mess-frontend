@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "@/lib/site/store";
 import type { DayOfWeek, DaySlots, MealType, MealWithRating } from "@/lib/site/types";
+import { SLOT_BADGE, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
 import { StarIcon, useMealRating } from "./useMealRating";
 
@@ -66,6 +67,8 @@ export default function WeekContainer({
     tab: "rate" | "reviews";
   } | null>(null);
   const user = useAppSelector((state) => state.auth.user);
+  // Highlight the meal being served now, or the next one, on today's card (PKT)
+  const active = useActiveMeal();
   const { isSubmitting, submit, successModal } = useMealRating();
 
   const { monday, weekRange, todayKey } = useMemo(() => {
@@ -103,6 +106,7 @@ export default function WeekContainer({
   };
 
   const renderMeal = (day: DayOfWeek, mealType: MealType, mealData: MealWithRating | null | undefined, timing: string) => {
+    const isActive = active.day === day && active.mealType === mealType;
     const hasMenu = Boolean(mealData && Array.isArray(mealData.items));
     const items = hasMenu && mealData!.items.length > 0 ? mealData!.items.join(", ") : "No menu";
     const title = hasMenu && mealData!.name && mealData!.name.trim() ? mealData!.name : null;
@@ -111,9 +115,17 @@ export default function WeekContainer({
     const commentCount = (hasMenu && mealData!.commentCount) || 0;
 
     return (
-      <div className="meal-block" key={mealType}>
+      <div
+        className={`meal-block ${isActive ? `slot-active slot-active--${active.status}` : ""}`}
+        key={mealType}
+      >
         <div className="meal-block-head">
-          <span className="meal-type">{MEAL_LABELS[mealType]}</span>
+          <span className="meal-type">
+            {MEAL_LABELS[mealType]}
+            {isActive && active.status && (
+              <span className={`slot-badge slot-badge--${active.status}`}>{SLOT_BADGE[active.status]}</span>
+            )}
+          </span>
           <span className="meal-time">{timing}</span>
         </div>
 
@@ -136,7 +148,7 @@ export default function WeekContainer({
         {hasMenu && (
           <div className="meal-actions-week">
             <button className="rate-btn-sm" onClick={() => handleRateClick(day, mealType)}>
-              {userHasRated ? "Edit rating" : "Rate"}
+              {userHasRated ? "Edit" : "Rate"}
             </button>
             <button className="reviews-btn-sm" onClick={() => setShowRatingModal({ day, mealType, tab: "reviews" })}>
               {commentCount > 0 ? `Reviews (${commentCount})` : "Reviews"}

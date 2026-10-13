@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useAppSelector } from "@/lib/site/store";
 import type { DaySlots, MealType, MealWithRating } from "@/lib/site/types";
+import { SLOT_BADGE, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
 import { StarIcon, useMealRating } from "./useMealRating";
 
@@ -10,6 +11,8 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
   const [isActive, setIsActive] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState<{ mealType: MealType; tab: "rate" | "reviews" } | null>(null);
   const user = useAppSelector((state) => state.auth.user);
+  // Highlight the meal being served now, or the next one (PKT)
+  const active = useActiveMeal();
   const { isSubmitting, submit, successModal } = useMealRating();
 
   const currentDate = new Date();
@@ -53,9 +56,17 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
     const commentCount = mealData.commentCount || 0;
 
     return (
-      <tr key={mealType}>
+      <tr
+        key={mealType}
+        className={active.day === day && active.mealType === mealType ? `slot-active slot-active--${active.status}` : undefined}
+      >
         <td>{timing}</td>
-        <td>{mealType.charAt(0).toUpperCase() + mealType.slice(1)}</td>
+        <td>
+          {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+          {active.day === day && active.mealType === mealType && active.status && (
+            <span className={`slot-badge slot-badge--${active.status}`}>{SLOT_BADGE[active.status]}</span>
+          )}
+        </td>
         <td>
           <div className="meal-info">
             {title && <div className="meal-title">{title}</div>}
@@ -68,7 +79,7 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
             </div>
             <div className="meal-actions">
               <button className="rate-btn" onClick={() => handleRateClick(mealType)}>
-                {userHasRated ? "Edit rating" : "Rate"}
+                {userHasRated ? "Edit" : "Rate"}
               </button>
               <button className="reviews-btn" onClick={() => setShowRatingModal({ mealType, tab: "reviews" })}>
                 {commentCount > 0 ? `Reviews (${commentCount})` : "Reviews"}

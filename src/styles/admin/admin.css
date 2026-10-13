@@ -1165,3 +1165,195 @@ body.adm {
     flex-basis: 100%;
   }
 }
+
+/* ---------- Stats ---------- */
+
+.adm-stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.adm-stat-tile {
+  padding: 14px 16px;
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-surface-2);
+}
+.adm-stat-value {
+  margin: 4px 0 2px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--adm-text);
+  font-variant-numeric: tabular-nums;
+}
+.adm-stat-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--adm-text-2);
+}
+
+.adm-chart-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.adm-chart-head p {
+  margin: 0;
+  font-size: 12px;
+}
+.adm-chart-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+}
+
+.adm-chart {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  height: 220px;
+  padding-bottom: 22px;
+}
+.adm-chart-grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--adm-text-3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.adm-bars {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px; /* surface gap between adjacent bars */
+  border-bottom: 1px solid var(--adm-border-strong);
+  background:
+    linear-gradient(var(--adm-border) 1px, transparent 1px) 0 0 / 100% 50%;
+}
+.adm-bar-slot {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  outline: none;
+  cursor: default;
+}
+.adm-bar {
+  width: 100%;
+  max-width: 28px;
+  min-height: 2px;
+  background: #7f9a3a;
+  border-radius: 4px 4px 0 0;
+  opacity: 0.55;
+  transition: opacity 0.12s;
+}
+.adm-bar.is-current {
+  opacity: 1;
+}
+.adm-bar-slot:hover .adm-bar,
+.adm-bar-slot:focus-visible .adm-bar {
+  opacity: 1;
+}
+.adm-bar-label {
+  position: absolute;
+  bottom: -20px;
+  font-size: 10px;
+  color: var(--adm-text-3);
+  white-space: nowrap;
+}
+.adm-bar-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 3;
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 150px;
+  padding: 8px 10px;
+  border-radius: var(--adm-radius-sm);
+  background: #20251b;
+  color: #f3f5ee;
+  font-size: 12px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: var(--adm-shadow-lg);
+}
+.adm-bar-slot:hover .adm-bar-tip,
+.adm-bar-slot:focus-visible .adm-bar-tip {
+  display: flex;
+  bottom: 70%;
+}
+.adm-bar-slot:first-child .adm-bar-tip,
+.adm-bar-slot:nth-child(2) .adm-bar-tip {
+  left: 0;
+  transform: none;
+}
+.adm-bar-slot:last-child .adm-bar-tip,
+.adm-bar-slot:nth-last-child(2) .adm-bar-tip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.adm-stat-table {
+  margin-top: 16px;
+}
+.adm-stat-table summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--adm-accent-strong);
+}
+.adm-table-wrap {
+  margin-top: 10px;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius-sm);
+}
+.adm-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.adm-table-wrap th,
+.adm-table-wrap td {
+  padding: 7px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--adm-border);
+}
+.adm-table-wrap th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+.adm-table-wrap thead th {
+  position: sticky;
+  top: 0;
+  background: var(--adm-surface-2);
+  font-size: 12px;
+  color: var(--adm-text-2);
+}
+
+@media (max-width: 700px) {
+  .adm-stat-tiles {
+    grid-template-columns: 1fr;
+  }
+  .adm-bars--daily .adm-bar-label {
+    display: none;
+  }
+  .adm-bars--daily .adm-bar-slot:nth-last-child(1) .adm-bar-label,
+  .adm-bars--daily .adm-bar-slot:nth-last-child(15) .adm-bar-label,
+  .adm-bars--daily .adm-bar-slot:nth-child(1) .adm-bar-label {
+    display: inline;
+  }
+}
