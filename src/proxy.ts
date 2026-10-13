@@ -35,17 +35,8 @@ export function proxy(request: NextRequest) {
   }
 
   if (env) {
-    const host = requestHost(request.headers, env.trustedProxyHops);
-    const onAdminHost = host === env.adminHost;
+    const onAdminHost = requestHost(request.headers, env.trustedProxyHops) === env.adminHost;
     if (isAdmin && !onAdminHost) {
-      // Student host in a split deployment: point people at the admin host.
-      // Nothing admin is served here; the browser just moves to the other origin.
-      if (env.siteHost && host === env.siteHost) {
-        return NextResponse.redirect(new URL(pathname, env.adminOrigin), {
-          status: 308,
-          headers: { "Cache-Control": "no-store" },
-        });
-      }
       return new NextResponse("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
     }
     if (!isAdmin && onAdminHost && env.siteHost) {
