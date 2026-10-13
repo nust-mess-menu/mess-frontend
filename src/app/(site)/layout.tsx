@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import Providers from "@/components/site/Providers";
 
 // Same stylesheet order as the original app: Bootstrap, then app CSS
+import "@/styles/site.css";
 import "@/styles/vendor/bootstrap-5.3.0-alpha1.min.css";
 import "@/styles/site/fonts.css";
 import "@/styles/site/index.css";

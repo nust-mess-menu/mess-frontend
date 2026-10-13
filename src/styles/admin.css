@@ -1,0 +1,14 @@
+/*
+ * Admin console stylesheet. Styling lives in Tailwind utility classes in the
+ * components; this file holds only the theme, base defaults and keyframes.
+ */
+@import "tailwindcss";
+
+@theme {
+}
+
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}

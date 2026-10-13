@@ -1,0 +1,40 @@
+/*
+ * Student site stylesheet. Styling lives in Tailwind utility classes in the
+ * components; this file holds only what utilities can't express: the theme,
+ * base element defaults, keyframes and third-party overrides.
+ */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), sans-serif;
+  --color-ink: #212529;
+  --color-olive: #7f9a3a;
+  --color-olive-dark: #6b8230;
+
+  /* --- shell section (Navbar, Footer, Today/Week, popups, report) --- */
+
+  /* --- meal modal section (MealRatingModal, MealComments) --- */
+}
+
+@layer base {
+  body {
+    margin: 0;
+    color: var(--color-ink);
+    background: #fff;
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* --- shell section --- */
+
+  /* --- meal modal section --- */
+}
+
+/* --- shell section: keyframes / third-party overrides --- */
+
+/* --- meal modal section: keyframes --- */
