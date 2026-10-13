@@ -5,10 +5,16 @@ import { useAppSelector } from "@/lib/site/store";
 import type { DayOfWeek, DaySlots, MealType, MealWithRating } from "@/lib/site/types";
 import { SLOT_BADGE, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
+import { cx, SLOT_BADGE_BASE, SLOT_BADGE_CLASS } from "./shellClasses";
 import { StarIcon, useMealRating } from "./useMealRating";
 
-const ChevronIcon = () => (
-  <svg className="day-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+const SMALL_BTN =
+  "inline-flex items-center px-[11px] py-[5px] border rounded-[6px] text-[0.75rem] font-semibold leading-[1.2] transition-all duration-200 ease-[ease] active:translate-y-px";
+
+const ChevronIcon = ({ open }: { open: boolean }) => (
+  <svg
+    className={cx("transition-transform duration-200 ease-[ease] motion-reduce:transition-none", open && "rotate-180")}
+    viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
     <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" fill="none" />
   </svg>
 );
@@ -114,43 +120,63 @@ export default function WeekContainer({
     const userHasRated = hasMenu && mealData!.userRating !== null && mealData!.userRating !== undefined;
     const commentCount = (hasMenu && mealData!.commentCount) || 0;
 
+    const status = isActive ? active.status : null;
+
     return (
       <div
-        className={`meal-block ${isActive ? `slot-active slot-active--${active.status}` : ""}`}
+        className={cx(
+          "flex flex-col gap-[6px] px-4 py-[14px] max-[561px]:px-[14px] max-[561px]:py-3",
+          status === "now"
+            ? "bg-[#f1f7e2] shadow-[inset_4px_0_0_#9bb158]"
+            : status === "next"
+              ? "bg-[#f8fbf1] shadow-[inset_4px_0_0_#b9cc8a]"
+              : "bg-white"
+        )}
         key={mealType}
       >
-        <div className="meal-block-head">
-          <span className="meal-type">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[0.7rem] font-bold tracking-[0.06em] uppercase text-[#6b737d]">
             {MEAL_LABELS[mealType]}
-            {isActive && active.status && (
-              <span className={`slot-badge slot-badge--${active.status}`}>{SLOT_BADGE[active.status]}</span>
-            )}
+            {status && <span className={cx(SLOT_BADGE_BASE, SLOT_BADGE_CLASS[status])}>{SLOT_BADGE[status]}</span>}
           </span>
-          <span className="meal-time">{timing}</span>
+          <span className="text-[0.7rem] text-[#a8afb8] whitespace-nowrap">{timing}</span>
         </div>
 
-        {title && <div className="meal-title-week">{title}</div>}
-        <div className="meal-items-week">{items}</div>
+        {title && <div className="font-semibold text-[0.88rem] text-[#30363d]">{title}</div>}
+        <div className="text-[0.88rem] leading-[1.5] text-[#3d444d] max-[561px]:text-[0.85rem]">{items}</div>
 
-        <div className="meal-rating-week">
+        <div className="flex flex-wrap items-center gap-[5px] text-[0.78rem] text-[#5c646f]">
           {hasRating ? (
             <>
-              <StarIcon className="icon-inline" size={13} />
-              <span className="meal-score">{mealData!.averageRating!.toFixed(1)}/10</span>
-              <span className="meal-count">({mealData!.ratingCount})</span>
+              <StarIcon className="inline-flex shrink-0" size={13} />
+              <span className="font-semibold tabular-nums">{mealData!.averageRating!.toFixed(1)}/10</span>
+              <span className="text-[#8b939d]">({mealData!.ratingCount})</span>
             </>
           ) : (
-            <span className="meal-count">No ratings yet</span>
+            <span className="text-[#8b939d]">No ratings yet</span>
           )}
-          {userHasRated && <span className="rated-note-week">You rated {mealData!.userRating}/10</span>}
+          {userHasRated && (
+            <span className="text-[0.72rem] text-[#7c9341] bg-[#f3f8e7] rounded-[4px] px-[6px] py-px">
+              You rated {mealData!.userRating}/10
+            </span>
+          )}
         </div>
 
         {hasMenu && (
-          <div className="meal-actions-week">
-            <button className="rate-btn-sm" onClick={() => handleRateClick(day, mealType)}>
+          <div className="flex flex-wrap gap-[6px] mt-[2px]">
+            <button
+              className={cx(SMALL_BTN, "bg-[#f3f8e7] text-[#6f8438] border-[#8fab55] hover:bg-[#e8f1d1] hover:border-[#9bb158]")}
+              onClick={() => handleRateClick(day, mealType)}
+            >
               {userHasRated ? "Edit" : "Rate"}
             </button>
-            <button className="reviews-btn-sm" onClick={() => setShowRatingModal({ day, mealType, tab: "reviews" })}>
+            <button
+              className={cx(
+                SMALL_BTN,
+                "bg-white text-[#4a525c] border-[#9aa3ad] hover:bg-[#f5f6f8] hover:border-[#bfc4cb] hover:text-[#30363d]"
+              )}
+              onClick={() => setShowRatingModal({ day, mealType, tab: "reviews" })}
+            >
               {commentCount > 0 ? `Reviews (${commentCount})` : "Reviews"}
             </button>
           </div>
@@ -171,29 +197,47 @@ export default function WeekContainer({
     const panelId = `day-panel-${day}`;
 
     return (
-      <div className={`day-card ${isExpanded ? "is-open" : ""} ${isToday ? "is-today" : ""}`} key={day}>
+      <div
+        className={cx(
+          "day-card bg-white border rounded-[8px] overflow-hidden transition-[border-color,box-shadow] duration-150 ease-[ease]",
+          isExpanded && "is-open shadow-[0_3px_10px_rgba(20,24,30,0.12)]",
+          // Today gets a quiet olive edge rather than a loud fill
+          isToday ? "is-today border-[#9bb158] border-l-4" : isExpanded ? "border-[#8f99a4]" : "border-[#aab2bc]"
+        )}
+        key={day}
+      >
         <button
           type="button"
-          className="day-header"
+          className="w-full flex items-center justify-between gap-3 px-4 py-[14px] bg-transparent border-none text-left transition-[background] duration-150 ease-[ease] hover:bg-[#fafbfc] focus-visible:outline-2 focus-visible:outline-[#7c9341] focus-visible:-outline-offset-2 max-[561px]:px-[14px] max-[561px]:py-3"
           onClick={() => toggleDay(day)}
           aria-expanded={isExpanded}
           aria-controls={panelId}
         >
-          <div className="day-header-main">
-            <div className="day-title-row">
-              <span className="day-name">{DAY_LABELS[day]}</span>
-              <span className="day-date">{dateLabel}</span>
-              {isToday && <span className="day-today">Today</span>}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[0.95rem] font-semibold text-[#24292f] max-[561px]:text-[0.9rem]">{DAY_LABELS[day]}</span>
+              <span className="text-[0.78rem] text-[#8b939d]">{dateLabel}</span>
+              {isToday && (
+                <span className="text-[0.64rem] font-bold tracking-[0.05em] uppercase text-[#6f8438] bg-[#f0f6e2] border border-[#dbe8bd] rounded-[4px] px-[5px] py-px">
+                  Today
+                </span>
+              )}
             </div>
-            {!isExpanded && <p className="day-preview">{getDayPreview(dayMenu)}</p>}
+            {/* One line only - the card opens for the full picture */}
+            {!isExpanded && <p className="day-preview mt-[3px] mb-0 text-[0.8rem] text-[#8b939d] truncate">{getDayPreview(dayMenu)}</p>}
           </div>
-          <div className="day-header-side">
-            <ChevronIcon />
+          <div className="flex items-center gap-[10px] shrink-0 text-[#6b737d]">
+            <ChevronIcon open={isExpanded} />
           </div>
         </button>
 
         {isExpanded && (
-          <div className="day-panel" id={panelId} role="region" aria-label={`${DAY_LABELS[day]} menu`}>
+          <div
+            className="grid grid-cols-3 gap-px bg-[#c3c9d0] border-t border-[#c3c9d0] animate-day-open motion-reduce:animate-none max-[821px]:grid-cols-2 max-[561px]:grid-cols-1"
+            id={panelId}
+            role="region"
+            aria-label={`${DAY_LABELS[day]} menu`}
+          >
             {MEAL_TYPES.map((mealType) => renderMeal(day, mealType, dayMenu?.[mealType], timings[mealType]))}
           </div>
         )}
@@ -205,18 +249,29 @@ export default function WeekContainer({
 
   return (
     <>
-      <div id="weekContainer" className="container my-3">
-        <div className="week-head">
+      <div id="weekContainer" className="w-full max-w-[860px] px-3 mx-auto my-4">
+        <div className="flex items-end justify-between gap-4 mb-4 max-[561px]:items-start">
           <div>
-            <h3 className="week-range">{weekRange}</h3>
-            {weekNumber && <p className="week-sub">Week {weekNumber} menu rotation</p>}
+            <h3 className="m-0 text-[1.25rem] font-semibold text-[#24292f] max-[561px]:text-[1.1rem]">{weekRange}</h3>
+            {weekNumber && <p className="mt-[2px] mb-0 text-[0.78rem] text-[#8b939d]">Week {weekNumber} menu rotation</p>}
           </div>
-          <button type="button" className="week-toggle-all" onClick={() => setExpandedDays(allExpanded ? [] : [...DAYS])}>
+          <button
+            type="button"
+            className="shrink-0 px-3 py-[6px] text-[0.76rem] font-semibold text-[#4d545d] bg-white border border-[#9aa3ad] rounded-[6px] transition-[background,border-color] duration-150 ease-[ease] hover:bg-[#f5f6f8] hover:border-[#bfc4cb]"
+            onClick={() => setExpandedDays(allExpanded ? [] : [...DAYS])}
+          >
             {allExpanded ? "Collapse all" : "Expand all"}
           </button>
         </div>
 
-        <div className={`week-list ${isActive ? "active" : ""}`}>{DAYS.map((day, i) => renderDay(day, i))}</div>
+        <div
+          className={cx(
+            "flex flex-col gap-2 transition-[opacity,translate] duration-300 ease-[ease] motion-reduce:transition-none",
+            isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[6px]"
+          )}
+        >
+          {DAYS.map((day, i) => renderDay(day, i))}
+        </div>
       </div>
 
       {showRatingModal && selected && (

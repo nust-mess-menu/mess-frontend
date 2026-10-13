@@ -6,6 +6,24 @@ import { COMMENTS_PAGE_SIZE, fetchMealComments, selectMealThread, upvoteComment 
 import { useAppDispatch, useAppSelector } from "@/lib/site/store";
 import type { MealComment } from "@/lib/site/types";
 
+const cx = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(" ");
+
+// Phones: max-[577px] matches the original max-width: 576px breakpoint
+const reviewsList = "m-0 flex list-none flex-col p-0";
+const reviewItem = "flex gap-3 border-t border-[#eceef1] py-3.5 first:border-t-0 first:pt-[2px]";
+const avatarBox = "mr-0 h-[34px] w-[34px] shrink-0 select-none max-[577px]:h-[30px] max-[577px]:w-[30px]";
+// Stock anonymous avatar - no real profile photos are ever loaded
+const reviewAvatar = cx(avatarBox, "rounded-full bg-[#eef0f2] object-cover filter-none");
+const reviewBody = "flex min-w-0 flex-1 flex-col gap-[5px]";
+const skeleton =
+  "block rounded bg-[#eef0f2] bg-[linear-gradient(90deg,#eef0f2_25%,#e3e6e9_37%,#eef0f2_63%)] bg-[length:400%_100%] animate-skeleton-shimmer motion-reduce:animate-none";
+const skeletonLine = cx(skeleton, "h-2.5");
+const pill = "inline-flex items-center gap-[5px] rounded-[14px] px-2.5 py-[3px] text-[0.74rem] font-semibold max-[577px]:px-3 max-[577px]:py-[5px]";
+const stateBox = "rounded-lg border px-4 py-7 text-center";
+const stateTitle = "m-0 text-[0.9rem] font-semibold text-[#4d545d]";
+const outlineBtn =
+  "rounded-md border border-[#d7d9dd] bg-white font-semibold text-[#4d545d] transition-colors duration-150";
+
 /**
  * Reviews list for a single meal: rating summary, then comments sorted by
  * upvotes. Authors appear only under generated usernames with stock avatars -
@@ -38,17 +56,17 @@ export default function MealComments({
   };
 
   return (
-    <div className="reviews">
+    <div className="flex flex-col gap-4" data-testid="reviews">
       <ReviewSummary averageRating={averageRating} ratingCount={ratingCount} commentCount={total} />
 
       {loading && <ReviewSkeletonList />}
 
       {!loading && error && (
-        <div className="reviews-state reviews-state--error" role="alert">
-          <p className="reviews-state-title">{error}</p>
+        <div className={cx(stateBox, "border-solid border-[#e8d2d2] bg-[#fdf7f7]")} role="alert">
+          <p className={stateTitle}>{error}</p>
           <button
             type="button"
-            className="reviews-retry"
+            className={cx(outlineBtn, "mt-3 px-3.5 py-1.5 text-[0.78rem] hover:bg-[#f5f6f8]")}
             onClick={() => dispatch(fetchMealComments({ mealId, offset: 0, append: false }))}
           >
             Try again
@@ -57,15 +75,15 @@ export default function MealComments({
       )}
 
       {!loading && !error && items.length === 0 && (
-        <div className="reviews-state">
-          <p className="reviews-state-title">No reviews yet</p>
-          <p className="reviews-state-text">Be the first to tell others what this meal was like.</p>
+        <div className={cx(stateBox, "border-dashed border-[#dfe2e6]")}>
+          <p className={stateTitle}>No reviews yet</p>
+          <p className="mt-1.5 mb-0 text-[0.8rem] text-[#8b939d]">Be the first to tell others what this meal was like.</p>
         </div>
       )}
 
       {!loading && !error && items.length > 0 && (
         <>
-          <ul className="reviews-list">
+          <ul className={reviewsList}>
             {items.map((comment) => (
               <ReviewItem key={comment.id} comment={comment} onUpvote={handleUpvote} />
             ))}
@@ -74,7 +92,10 @@ export default function MealComments({
           {hasMore && (
             <button
               type="button"
-              className="reviews-more"
+              className={cx(
+                outlineBtn,
+                "self-center px-4 py-[7px] text-[0.78rem] enabled:hover:border-[#bfc4cb] enabled:hover:bg-[#f5f6f8] disabled:cursor-default disabled:opacity-60"
+              )}
               onClick={() => dispatch(fetchMealComments({ mealId, offset: items.length, append: true }))}
               disabled={loadingMore}
             >
@@ -100,18 +121,21 @@ function ReviewSummary({
   const score = hasRating ? averageRating.toFixed(1) : "—";
 
   return (
-    <div className="reviews-summary">
-      <div className="reviews-score">
-        <span className="reviews-score-value">{score}</span>
-        <span className="reviews-score-scale">/10</span>
+    <div
+      className="flex items-center gap-4 rounded-lg border border-[#e4e6ea] bg-[#fafbfc] px-4 py-3.5 max-[577px]:gap-3.5 max-[577px]:px-3.5 max-[577px]:py-3"
+      data-testid="reviews-summary"
+    >
+      <div className="flex shrink-0 items-baseline gap-px">
+        <span className="text-[1.75rem] leading-none font-semibold text-[#30363d] tabular-nums max-[577px]:text-[1.5rem]">{score}</span>
+        <span className="text-[0.85rem] font-medium text-[#8b939d]">/10</span>
       </div>
-      <div className="reviews-summary-detail">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <RatingMeter value={hasRating ? averageRating : 0} />
-        <p className="reviews-summary-meta">
+        <p className="m-0 text-[0.78rem] text-[#6b737d]">
           {ratingCount > 0 ? `${ratingCount} ${ratingCount === 1 ? "rating" : "ratings"}` : "No ratings yet"}
           {commentCount > 0 && (
             <>
-              <span className="reviews-dot" aria-hidden="true">
+              <span className="mx-1.5 text-[#b9bfc7]" aria-hidden="true">
                 ·
               </span>
               {`${commentCount} written ${commentCount === 1 ? "review" : "reviews"}`}
@@ -126,8 +150,10 @@ function ReviewSummary({
 function RatingMeter({ value }: { value: number }) {
   const pct = Math.max(0, Math.min(100, (value / 10) * 100));
   return (
-    <div className="rating-meter" role="img" aria-label={`Average ${value.toFixed(1)} out of 10`}>
-      <div className="rating-meter-fill" style={{ width: `${pct}%` }} />
+    <div className="h-[5px] overflow-hidden rounded-[3px] bg-[#e7eaee]" role="img" aria-label={`Average ${value.toFixed(1)} out of 10`}>
+      <div
+        className="h-full rounded-[3px] bg-[#9bb158] transition-[width] duration-300 ease-[ease] motion-reduce:transition-none"
+        style={{ width: `${pct}%` }} />
     </div>
   );
 }
@@ -145,32 +171,55 @@ function ReviewItem({
   const author = comment.author || ANONYMOUS_NAME;
 
   return (
-    <li className="review">
+    <li className={reviewItem} data-testid="review">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="review-avatar" src={getAvatarForId(author)} alt="" loading="lazy" />
+      <img className={reviewAvatar} src={getAvatarForId(author)} alt="" loading="lazy" />
 
-      <div className="review-body">
-        <div className="review-head">
-          <span className="review-name">{author}</span>
-          {comment.isOwn && <span className="review-you">You</span>}
-          <span className="review-rating">{comment.rating}/10</span>
-          <time className="review-time" dateTime={comment.updatedAt} suppressHydrationWarning>
+      <div className={reviewBody}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className="max-w-[55%] truncate text-[0.88rem] font-semibold text-[#30363d] max-[577px]:max-w-[45%]"
+            data-testid="review-name"
+          >{author}</span>
+          {comment.isOwn && (
+            <span
+              className="rounded border border-[#dbe8bd] bg-[#f3f8e7] px-[5px] py-[1px] text-[0.66rem] font-semibold tracking-[0.03em] text-[#7c9341] uppercase"
+              data-testid="review-you"
+            >
+              You
+            </span>
+          )}
+          <span className="rounded bg-[#f0f2f5] px-1.5 py-[2px] text-[0.72rem] font-semibold text-[#4d545d] tabular-nums">{comment.rating}/10</span>
+          <time
+            className="ml-auto text-[0.72rem] whitespace-nowrap text-[#8b939d] max-[577px]:ml-0 max-[577px]:w-full"
+            dateTime={comment.updatedAt} suppressHydrationWarning>
             {formatRelativeTime(comment.updatedAt)}
           </time>
         </div>
 
-        <p className={`review-text ${isLong && !expanded ? "is-clamped" : ""}`}>{comment.comment}</p>
+        <p
+          className={cx(
+            "m-0 text-[0.88rem] leading-[1.55] wrap-anywhere whitespace-pre-line text-[#3d444d] max-[577px]:text-[0.84rem]",
+            isLong && !expanded && "line-clamp-4"
+          )}
+          data-testid="review-text"
+        >
+          {comment.comment}
+        </p>
 
         {isLong && (
-          <button type="button" className="review-toggle" onClick={() => setExpanded((prev) => !prev)}>
+          <button
+            type="button"
+            className="self-start border-0 bg-transparent p-0 text-[0.76rem] font-semibold text-[#7c9341] hover:underline"
+            onClick={() => setExpanded((prev) => !prev)}>
             {expanded ? "Show less" : "Show more"}
           </button>
         )}
 
-        <div className="review-foot">
+        <div className="mt-[2px] flex items-center gap-2.5">
           {comment.isOwn ? (
             upvotes > 0 && (
-              <span className="review-upvote-static">
+              <span className={cx(pill, "bg-[#f4f5f7] text-[#8b939d] tabular-nums")}>
                 <UpvoteIcon />
                 <span>{upvotes}</span>
               </span>
@@ -178,7 +227,14 @@ function ReviewItem({
           ) : (
             <button
               type="button"
-              className={`review-upvote ${comment.hasUpvoted ? "is-active" : ""}`}
+              className={cx(
+                pill,
+                "border transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#7c9341]",
+                comment.hasUpvoted
+                  ? "border-[#c4d796] bg-[#f3f8e7] text-[#6f8438]"
+                  : "border-[#d7d9dd] bg-white text-[#5c646f] hover:border-[#bfc4cb] hover:bg-[#f5f6f8] hover:text-[#30363d]"
+              )}
+              data-testid="review-upvote"
               onClick={() => onUpvote(comment.id, !comment.hasUpvoted)}
               aria-pressed={Boolean(comment.hasUpvoted)}
               aria-label={
@@ -188,8 +244,8 @@ function ReviewItem({
               }
             >
               <UpvoteIcon />
-              <span className="review-upvote-count">{upvotes > 0 ? upvotes : ""}</span>
-              <span className="review-upvote-label">Helpful</span>
+              <span className="tabular-nums empty:hidden" data-testid="review-upvote-count">{upvotes > 0 ? upvotes : ""}</span>
+              <span>Helpful</span>
             </button>
           )}
         </div>
@@ -206,14 +262,14 @@ const UpvoteIcon = () => (
 
 function ReviewSkeletonList() {
   return (
-    <ul className="reviews-list" aria-hidden="true">
+    <ul className={reviewsList} aria-hidden="true">
       {[0, 1, 2].map((i) => (
-        <li className="review" key={i}>
-          <span className="review-avatar skeleton-block" />
-          <div className="review-body">
-            <span className="skeleton-line skeleton-line--short" />
-            <span className="skeleton-line" />
-            <span className="skeleton-line skeleton-line--mid" />
+        <li className={reviewItem} key={i}>
+          <span className={cx(avatarBox, skeleton)} />
+          <div className={reviewBody}>
+            <span className={cx(skeletonLine, "w-[35%]")} />
+            <span className={cx(skeletonLine, "w-full")} />
+            <span className={cx(skeletonLine, "w-[70%]")} />
           </div>
         </li>
       ))}

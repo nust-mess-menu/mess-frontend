@@ -1,14 +1,76 @@
 /*
  * Admin console stylesheet. Styling lives in Tailwind utility classes in the
  * components; this file holds only the theme, base defaults and keyframes.
+ * Brand olive (#9bb158 on the student site) on calm neutrals.
  */
 @import "tailwindcss";
 
 @theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-adm-bg: #f6f7f2;
+  --color-adm-surface: #ffffff;
+  --color-adm-surface-2: #f9faf6;
+  --color-adm-border: #e3e6dc;
+  --color-adm-border-strong: #cfd4c4;
+  --color-adm-text: #1f2419;
+  --color-adm-text-2: #5b6352;
+  --color-adm-text-3: #858c7c;
+  --color-adm-accent: #7f9a3a;
+  --color-adm-accent-strong: #6a8230;
+  --color-adm-accent-soft: #eef3e0;
+  --color-adm-accent-ring: rgba(127, 154, 58, 0.35);
+  --color-adm-danger: #b4382f;
+  --color-adm-danger-soft: #fbecea;
+  --color-adm-warn: #8a5a00;
+  --color-adm-warn-soft: #fdf3dc;
+  --color-adm-ok: #2f6b3a;
+  --color-adm-ok-soft: #e8f4ea;
+  --color-adm-info-soft: #eaf1f8;
+  --color-adm-ink: #20251b;
+
+  --radius-adm: 10px;
+  --radius-adm-sm: 7px;
+
+  --shadow-adm: 0 1px 2px rgba(31, 36, 25, 0.06), 0 4px 16px rgba(31, 36, 25, 0.05);
+  --shadow-adm-lg: 0 12px 40px rgba(31, 36, 25, 0.18);
+
+  --animate-adm-spin: adm-spin 0.7s linear infinite;
+  --animate-adm-fade: adm-fade 0.15s ease-out;
+  --animate-adm-rise: adm-rise 0.18s ease-out;
+
+  @keyframes adm-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes adm-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes adm-rise {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+  }
 }
 
 @layer base {
+  body {
+    background: var(--color-adm-bg);
+    color: var(--color-adm-text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
   button:not(:disabled) {
     cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-adm-accent);
+    outline-offset: 2px;
   }
 }

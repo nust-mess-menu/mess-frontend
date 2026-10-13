@@ -33,7 +33,7 @@ test.describe("student site (signed out)", () => {
     await page.locator(".reviews-btn").first().click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByText("Meal reviews")).toBeVisible();
-    await expect(dialog.locator(".reviews-summary")).toBeVisible();
+    await expect(dialog.getByTestId("reviews-summary")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
 

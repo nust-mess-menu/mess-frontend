@@ -62,14 +62,14 @@ The admin host then serves only the admin, and the student host returns 404 for 
   - site-wide: a slowdown that grows with recent failures, never a lock the attacker could turn on the real admin;
   - an in-flight cap on concurrent sign-in attempts;
   - long, non-repetitive passwords required.
-- **Pages:** checked on the server. The proxy redirect is only a convenience. Admin pages load no Bootstrap, analytics or third-party code.
+- **Pages:** checked on the server. The proxy redirect is only a convenience. Admin pages load no student-site CSS, analytics or third-party code.
 
 **Whole app**
 - **CSP:** a fresh nonce per request plus `'strict-dynamic'`, so no inline or injected script runs. The admin CSP allows no third-party origins at all. Other directives: `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'none'`.
 - **Headers:** HSTS (preload), `nosniff`, `X-Frame-Options: DENY`, a strict referrer policy, a locked-down `Permissions-Policy`, `COOP: same-origin-allow-popups` (needed for the Google sign-in popup) and CORP. `X-Powered-By` is off. `/admin` and `/api` are `no-store` and `noindex`.
 - **User content:** rendered as text only. There is no `dangerouslySetInnerHTML`. Profile photos must be https and load with `no-referrer`. Reviewers appear only under generated usernames.
 - **Shared computers:** cached menus, which include the user's own ratings, are cleared on sign-in, sign-out and session expiry.
-- **Dependencies:** Bootstrap is bundled locally instead of loaded from a CDN, so there's no third-party CSS or JS supply chain. Only the Firebase `app` and `auth` packages are installed. `npm audit --omit=dev` reports 0 vulnerabilities.
+- **Dependencies:** styling is Tailwind, compiled at build time, so no CSS or JS comes from a CDN. Only the Firebase `app` and `auth` packages are installed. `npm audit --omit=dev` reports 0 vulnerabilities.
 - **Testing hook:** the Firebase Auth emulator setting is used only for local tests, and a production build pointed at a real API refuses to start with it set.
 
 Known limits:
@@ -129,12 +129,13 @@ The image runs as a non-root user, the app files are root-owned and read-only, a
 
 ```
 src/proxy.ts                 CSP nonce, host binding, admin sign-in redirect
-src/app/(site)/              student pages (root layout #1: Bootstrap + original CSS)
+src/app/(site)/              student pages (root layout #1: src/styles/site.css)
 src/app/(admin)/admin/       admin pages   (root layout #2: admin CSS only)
 src/app/api/admin/           backend-for-frontend route handlers
 src/lib/server/              env, session crypto, rate limiting, backend client (server-only)
 src/lib/site/                Redux store, Firebase auth, API client for the student site
 src/components/site|admin/   UI
-src/styles/                  original CSS (unchanged), vendored Bootstrap 5.3.0-alpha1, admin CSS
+src/styles/                  Tailwind entry files (site.css, admin.css) - see docs/styling.md
+docs/                        styling rules, DDoS protection / operations
 test/  e2e/                  unit and end-to-end tests
 ```

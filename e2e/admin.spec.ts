@@ -14,7 +14,7 @@ test("wrong password shows an error and clears the field", async ({ page, cspVio
   await page.getByLabel("Username").fill(ADMIN.username);
   await page.getByLabel("Password", { exact: true }).fill("nope-nope");
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.locator(".adm-banner--error")).toContainText("Incorrect username or password");
+  await expect(page.locator("[data-testid=login-error]")).toContainText("Incorrect username or password");
   await expect(page.getByLabel("Password", { exact: true })).toHaveValue("");
 });
 
@@ -31,7 +31,7 @@ test("board shows both weeks and switching asks for confirmation", async ({ page
   void cspViolations;
   await adminLogin(page);
   await expect(page.getByText(/21 of 21 slots set/)).toBeVisible();
-  const live = page.locator(".adm-weekcard-value");
+  const live = page.locator("[data-testid=live-week]");
   const before = await live.textContent();
   await page.getByRole("button", { name: /Switch to Week/ }).click();
   await expect(page.getByRole("dialog")).toContainText("Students will immediately see");
@@ -55,7 +55,7 @@ test("edit a slot by entering dishes, then pick a library meal, then clear it", 
   const input = dialog.getByLabel(/Dishes/);
   await input.fill("Chicken Karahi, Naan, Kheer");
   await input.press("Enter");
-  await expect(dialog.locator(".adm-chip")).toHaveCount(3);
+  await expect(dialog.locator("[data-testid=chip]")).toHaveCount(3);
   await dialog.getByRole("button", { name: "Save slot" }).click();
   await expect(page.getByText("Week 2 · Sunday · Dinner updated.")).toBeVisible();
   const row = page.getByRole("row").filter({ hasText: "Sunday" });
@@ -93,7 +93,7 @@ test("meal library: create, find, edit, copy", async ({ page, context, cspViolat
   await expect(page.getByText("Meal created.")).toBeVisible();
 
   await page.getByPlaceholder("Search by dish, name or ID").fill("Eid Special");
-  const card = page.locator(".adm-meal").filter({ hasText: "Eid Special" });
+  const card = page.locator("[data-testid=meal-card]").filter({ hasText: "Eid Special" });
   await expect(card).toHaveCount(1);
   await expect(card).toContainText("Not on the menu");
   await card.getByTitle("Copy meal ID").click();
@@ -105,7 +105,7 @@ test("meal library: create, find, edit, copy", async ({ page, context, cspViolat
   await page.getByRole("dialog").getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByText("Meal updated.")).toBeVisible();
   await page.getByPlaceholder("Search by dish, name or ID").fill("Feast");
-  await expect(page.locator(".adm-meal")).toHaveCount(1);
+  await expect(page.locator("[data-testid=meal-card]")).toHaveCount(1);
 });
 
 test("bulk editor validates JSON live and applies a confirmed update", async ({ page, cspViolations }) => {
@@ -127,8 +127,8 @@ test("bulk editor validates JSON live and applies a confirmed update", async ({ 
   await expect(page.locator("#bulk-status")).toContainText("2 slots will be updated");
   await page.getByRole("button", { name: /^Save 2 slots/ }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Apply update" }).click();
-  await expect(page.locator(".adm-banner")).toContainText("1 saved, 1 failed");
-  await expect(page.locator(".adm-errlist")).toContainText('invalid day "funday"');
+  await expect(page.locator("[data-testid=bulk-result]")).toContainText("1 saved, 1 failed");
+  await expect(page.locator("[data-testid=bulk-errors]")).toContainText('invalid day "funday"');
 
   await page.getByRole("tab", { name: "Weekly menu" }).click();
   await page.getByRole("radio", { name: /Week 2/ }).click();
@@ -148,8 +148,8 @@ test("an admin edit reaches a student straight away", async ({ page, browser, cs
   void cspViolations;
   await adminLogin(page);
   const today = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Karachi", weekday: "long" }).format(new Date());
-  await expect(page.locator(".adm-weekcard-value")).toHaveText(/Week \d/);
-  const live = (await page.locator(".adm-weekcard-value").textContent())!.trim().replace("Week ", "");
+  await expect(page.locator("[data-testid=live-week]")).toHaveText(/Week \d/);
+  const live = (await page.locator("[data-testid=live-week]").textContent())!.trim().replace("Week ", "");
   await page.getByRole("radio", { name: new RegExp(`Week ${live}`) }).click();
   await page.getByRole("button", { name: `Edit Week ${live} · ${today} · Lunch` }).click();
   const dialog = page.getByRole("dialog");

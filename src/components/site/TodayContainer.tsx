@@ -5,7 +5,24 @@ import { useAppSelector } from "@/lib/site/store";
 import type { DaySlots, MealType, MealWithRating } from "@/lib/site/types";
 import { SLOT_BADGE, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
+import { CONTAINER, cx, SLOT_BADGE_BASE, SLOT_BADGE_CLASS } from "./shellClasses";
 import { StarIcon, useMealRating } from "./useMealRating";
+
+// Table cells (the original Bootstrap .table plus its own borders)
+const CELL = "border border-[#d7d9dd] p-2 text-left";
+const COL_TIME = "w-[20%] text-[0.85rem] whitespace-nowrap max-[577px]:text-[0.75rem] max-[577px]:px-1 max-[577px]:py-[6px]";
+const COL_WIDE = "w-[40%] max-[577px]:text-[0.85rem]";
+const HEAD_CELL = `${CELL} align-bottom font-bold shadow-[inset_0_0_0_9999px_rgba(0,0,0,0.1)]`;
+
+// Row tint for the meal being served now / next (PKT), with a marked leading edge
+const ACTIVE_CELL = {
+  now: ["shadow-[inset_4px_0_0_#9bb158,inset_0_0_0_9999px_#f1f7e2]", "shadow-[inset_0_0_0_9999px_#f1f7e2]"],
+  next: ["shadow-[inset_4px_0_0_#b9cc8a,inset_0_0_0_9999px_#f8fbf1]", "shadow-[inset_0_0_0_9999px_#f8fbf1]"],
+} as const;
+const HOVER_CELL = "group-hover:shadow-[inset_0_0_0_9999px_rgba(0,0,0,0.075)]";
+
+const SMALL_BTN =
+  "inline-flex items-center px-[10px] py-1 border rounded-[6px] text-[0.76rem] font-semibold leading-[1.2] transition-all duration-200 ease-[ease] active:translate-y-px max-[577px]:text-[0.74rem] max-[577px]:px-2 max-[577px]:py-[3px]";
 
 export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNumber: number; day: string }) {
   const [isActive, setIsActive] = useState(false);
@@ -55,33 +72,47 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
     const userHasRated = mealData.userRating !== null && mealData.userRating !== undefined;
     const commentCount = mealData.commentCount || 0;
 
+    const status = active.day === day && active.mealType === mealType ? active.status : null;
+    const [firstCell, otherCell] = status ? ACTIVE_CELL[status] : [HOVER_CELL, HOVER_CELL];
+
     return (
-      <tr
-        key={mealType}
-        className={active.day === day && active.mealType === mealType ? `slot-active slot-active--${active.status}` : undefined}
-      >
-        <td>{timing}</td>
-        <td>
+      <tr key={mealType} className={cx("group", status && `slot-active slot-active--${status}`)}>
+        <td className={cx(CELL, COL_TIME, firstCell)}>{timing}</td>
+        <td className={cx(CELL, COL_WIDE, otherCell)}>
           {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
-          {active.day === day && active.mealType === mealType && active.status && (
-            <span className={`slot-badge slot-badge--${active.status}`}>{SLOT_BADGE[active.status]}</span>
-          )}
+          {status && <span className={cx(SLOT_BADGE_BASE, SLOT_BADGE_CLASS[status])}>{SLOT_BADGE[status]}</span>}
         </td>
-        <td>
-          <div className="meal-info">
-            {title && <div className="meal-title">{title}</div>}
-            <div className="meal-items">{itemNames}</div>
-            <div className="meal-rating">
-              {hasRating && <StarIcon className="icon-inline" />}
+        <td className={cx(CELL, COL_WIDE, otherCell)}>
+          <div className="flex flex-col gap-[6px]">
+            {title && <div className="font-semibold text-[#30363d]">{title}</div>}
+            <div className="meal-items font-medium text-[1rem] leading-[1.5] text-[#333] max-[577px]:text-[0.9rem]">{itemNames}</div>
+            <div className="flex flex-wrap items-center gap-[6px] text-[0.86rem] text-[#5c646f] max-[577px]:text-[0.8rem]">
+              {hasRating && <StarIcon className="inline-flex shrink-0" />}
               <span>{aggregateRating}</span>
               {totalRatings && <span>{totalRatings}</span>}
-              {userHasRated && <span className="rated-note">Your rating: {mealData.userRating}/10</span>}
+              {userHasRated && (
+                <span className="rated-note text-[0.76rem] text-[#7a838f] max-[577px]:text-[0.72rem]">
+                  Your rating: {mealData.userRating}/10
+                </span>
+              )}
             </div>
-            <div className="meal-actions">
-              <button className="rate-btn" onClick={() => handleRateClick(mealType)}>
+            <div className="flex flex-wrap gap-[6px] mt-[2px]">
+              <button
+                className={cx(
+                  SMALL_BTN,
+                  "rate-btn self-start bg-[#f3f8e7] text-[#9bb158] border-[#8fab55] hover:bg-[#e8f1d1] hover:border-[#9bb158] hover:text-[#7c9341] active:bg-[#dce9bf] active:text-[#6f8438]"
+                )}
+                onClick={() => handleRateClick(mealType)}
+              >
                 {userHasRated ? "Edit" : "Rate"}
               </button>
-              <button className="reviews-btn" onClick={() => setShowRatingModal({ mealType, tab: "reviews" })}>
+              <button
+                className={cx(
+                  SMALL_BTN,
+                  "reviews-btn bg-white text-[#5c646f] border-[#9aa3ad] hover:bg-[#f5f6f8] hover:border-[#bfc4cb] hover:text-[#30363d]"
+                )}
+                onClick={() => setShowRatingModal({ mealType, tab: "reviews" })}
+              >
                 {commentCount > 0 ? `Reviews (${commentCount})` : "Reviews"}
               </button>
             </div>
@@ -95,18 +126,27 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
 
   return (
     <>
-      <div className="container my-4">
-        <h3 style={{ textAlign: "center" }}>{currentFormattedDate}</h3>
-        <div className={`table-container ${isActive ? "active" : ""}`}>
-          <table className="container my-4 table table-hover shadow p-3 mb-5 bg-body-tertiary rounded" id="mainContainer">
+      <div className={`${CONTAINER} my-6`}>
+        <h3 className="text-center">{currentFormattedDate}</h3>
+        <div className={cx("table-container", isActive && "active")}>
+          <table
+            className="w-full mt-6 mb-12 border-collapse caption-bottom align-top text-[#212529] bg-[#f8f9fa] rounded-[0.375rem] shadow-[0_0.5rem_1rem_rgba(33,37,41,0.15)]"
+            id="mainContainer"
+          >
             <thead>
-              <tr className="table-active">
-                <th scope="col">Timings</th>
-                <th scope="col">Meals</th>
-                <th scope="col">Menu</th>
+              <tr>
+                <th scope="col" className={cx(HEAD_CELL, COL_TIME)}>
+                  Timings
+                </th>
+                <th scope="col" className={cx(HEAD_CELL, COL_WIDE)}>
+                  Meals
+                </th>
+                <th scope="col" className={cx(HEAD_CELL, COL_WIDE)}>
+                  Menu
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="align-[inherit]">
               {meals.breakfast && renderMealRow("breakfast", timings.breakfast, meals.breakfast)}
               {meals.lunch && renderMealRow("lunch", timings.lunch, meals.lunch)}
               {meals.dinner && renderMealRow("dinner", timings.dinner, meals.dinner)}

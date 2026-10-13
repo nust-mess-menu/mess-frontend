@@ -17,7 +17,14 @@ import {
   type SlotRef,
   type Week,
 } from "./types";
-import { ConfirmDialog, Icon, useToast } from "./ui";
+import { badge, ConfirmDialog, cx, Icon, iconBtn, seg, segBtn, ui, useToast } from "./ui";
+
+
+const ROW =
+  "grid grid-cols-[120px_repeat(3,minmax(0,1fr))] items-stretch gap-2 " +
+  "max-[900px]:grid-cols-1 max-[900px]:rounded-adm-sm max-[900px]:border max-[900px]:border-adm-border max-[900px]:p-2.5";
+const DAY_CELL =
+  "flex flex-col items-start gap-1 px-1 py-2.5 font-bold max-[900px]:flex-row max-[900px]:items-center max-[900px]:px-0 max-[900px]:py-0.5";
 
 export default function MenuBoard({ data, onChanged }: { data: AdminData; onChanged: () => Promise<void> | void }) {
   const toast = useToast();
@@ -59,33 +66,37 @@ export default function MenuBoard({ data, onChanged }: { data: AdminData; onChan
   };
 
   return (
-    <section className="adm-card">
-      <div className="adm-card-head">
-        <div className="adm-seg" role="radiogroup" aria-label="Week">
+    <section className={ui.card}>
+      <div className={ui.cardHead}>
+        <div className={seg()} role="radiogroup" aria-label="Week">
           {([1, 2] as Week[]).map((w) => (
             <button
               key={w}
               type="button"
               role="radio"
               aria-checked={week === w}
-              className={`adm-seg-btn ${week === w ? "is-active" : ""}`}
+              className={segBtn(week === w)}
               onClick={() => setWeek(w)}
             >
               Week {w}
-              {data.currentWeek === w && <span className="adm-live-dot">Live</span>}
+              {data.currentWeek === w && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-adm-accent-strong before:size-[7px] before:rounded-full before:bg-adm-accent before:content-['']">
+                  Live
+                </span>
+              )}
             </button>
           ))}
         </div>
-        <p className="adm-muted">
+        <p className={ui.muted}>
           {filled} of 21 slots set{filled < 21 ? " — empty slots show “No menu” to students" : ""}
         </p>
       </div>
 
-      <div className="adm-board" role="table" aria-label={`Week ${week} menu`}>
-        <div className="adm-board-row adm-board-row--head" role="row">
-          <div role="columnheader" className="adm-board-day" />
+      <div className="grid gap-2" role="table" aria-label={`Week ${week} menu`}>
+        <div className={cx(ROW, "sticky top-[58px] z-[5] bg-adm-surface py-1 max-[900px]:hidden")} role="row">
+          <div role="columnheader" className={DAY_CELL} />
           {MEAL_TYPES.map((t) => (
-            <div role="columnheader" key={t} className="adm-board-colhead">
+            <div role="columnheader" key={t} className="px-1 text-[12px] font-bold uppercase tracking-[0.05em] text-adm-text-3">
               {MEAL_LABEL[t]}
             </div>
           ))}
@@ -94,37 +105,52 @@ export default function MenuBoard({ data, onChanged }: { data: AdminData; onChan
         {DAYS.map((day) => {
           const isToday = week === data.currentWeek && day === today;
           return (
-            <div key={day} role="row" className={`adm-board-row ${isToday ? "is-today" : ""}`}>
-              <div role="rowheader" className="adm-board-day">
+            <div
+              key={day}
+              role="row"
+              className={cx(
+                ROW,
+                isToday &&
+                  "rounded-adm-sm bg-[linear-gradient(90deg,var(--color-adm-accent-soft),transparent_140px)] max-[900px]:bg-adm-accent-soft max-[900px]:bg-none"
+              )}
+            >
+              <div role="rowheader" className={DAY_CELL}>
                 <span>{DAY_LABEL[day]}</span>
-                {isToday && <span className="adm-badge adm-badge--accent">Today</span>}
+                {isToday && <span className={badge(true)}>Today</span>}
               </div>
               {MEAL_TYPES.map((mealType) => {
                 const { id, meal, items } = slotInfo(week, day, mealType);
                 const ref = { week, day, mealType };
                 return (
-                  <div role="cell" key={mealType} className="adm-slot-cell">
-                    <span className="adm-slot-mobile-label">{MEAL_LABEL[mealType]}</span>
+                  <div role="cell" key={mealType} className="flex flex-col">
+                    <span className="hidden text-[11px] font-bold uppercase tracking-[0.05em] text-adm-text-3 max-[900px]:mb-1 max-[900px]:block">{MEAL_LABEL[mealType]}</span>
                     {items.length > 0 ? (
-                      <div className="adm-slot">
-                        {meal?.name && <p className="adm-slot-name">{meal.name}</p>}
-                        <ul className="adm-slot-items">
+                      <div
+                        className={cx(
+                          "flex flex-1 flex-col gap-1.5 rounded-adm-sm border bg-adm-surface pt-2.5 pr-2.5 pb-2 pl-3 transition-[border-color,box-shadow] duration-150 hover:shadow-adm",
+                          isToday ? "border-[#c9d7a2]" : "border-adm-border hover:border-adm-border-strong"
+                        )}
+                      >
+                        {meal?.name && <p className="text-[13px] font-bold">{meal.name}</p>}
+                        <ul className="text-[13px] text-adm-text-2">
                           {items.map((item, i) => (
-                            <li key={i}>{item}</li>
+                            <li key={i} className="before:text-adm-accent before:content-['•_']">
+                              {item}
+                            </li>
                           ))}
                         </ul>
-                        <div className="adm-slot-foot">
+                        <div className="mt-auto flex items-center justify-between gap-1.5">
                           {id ? (
-                            <code className="adm-code" title={id}>
+                            <code className={ui.code} title={id}>
                               {id.length > 22 ? `…${id.slice(-14)}` : id}
                             </code>
                           ) : (
-                            <span className="adm-badge">Legacy dishes</span>
+                            <span className={badge()}>Legacy dishes</span>
                           )}
-                          <span className="adm-slot-actions">
+                          <span className="flex">
                             <button
                               type="button"
-                              className="adm-iconbtn"
+                              className={iconBtn()}
                               onClick={() => setEditing(ref)}
                               aria-label={`Edit ${slotLabel(ref)}`}
                               title="Edit"
@@ -133,7 +159,7 @@ export default function MenuBoard({ data, onChanged }: { data: AdminData; onChan
                             </button>
                             <button
                               type="button"
-                              className="adm-iconbtn adm-iconbtn--danger"
+                              className={iconBtn(true)}
                               onClick={() => setClearing(ref)}
                               aria-label={`Clear ${slotLabel(ref)}`}
                               title="Clear"
@@ -144,7 +170,14 @@ export default function MenuBoard({ data, onChanged }: { data: AdminData; onChan
                         </div>
                       </div>
                     ) : (
-                      <button type="button" className="adm-slot-empty" onClick={() => setEditing(ref)}>
+                      <button
+                        type="button"
+                        className={cx(
+                          "flex min-h-[92px] flex-1 items-center justify-center gap-1.5 rounded-adm-sm border-[1.5px] border-dashed bg-adm-surface-2 font-semibold text-adm-text-3 hover:bg-adm-accent-soft hover:text-adm-accent-strong max-[900px]:min-h-12",
+                          isToday ? "border-[#c9d7a2]" : "border-adm-border-strong hover:border-adm-accent"
+                        )}
+                        onClick={() => setEditing(ref)}
+                      >
                         <Icon name="plus" /> Assign meal
                       </button>
                     )}

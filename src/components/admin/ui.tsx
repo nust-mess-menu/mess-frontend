@@ -12,6 +12,114 @@ import {
   type ReactNode,
 } from "react";
 
+
+/* ------------------------------------------------------------------ */
+/* Shared Tailwind class strings                                       */
+/* ------------------------------------------------------------------ */
+
+export const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(" ");
+
+type BtnVariant = "primary" | "secondary" | "ghost" | "danger";
+
+const BTN_VARIANT: Record<BtnVariant, string> = {
+  primary: "border-transparent bg-adm-accent text-white hover:not-disabled:bg-adm-accent-strong",
+  secondary: "border-[#dbe5c2] bg-adm-accent-soft text-adm-accent-strong hover:not-disabled:bg-[#e4ecce]",
+  ghost:
+    "border-adm-border bg-adm-surface text-adm-text-2 hover:not-disabled:border-adm-border-strong hover:not-disabled:text-adm-text",
+  danger: "border-transparent bg-adm-danger text-white hover:not-disabled:bg-[#9a2f27]",
+};
+
+/** Button classes. Sizes and variants are exclusive so no utilities collide. */
+export function btn(variant: BtnVariant, opts: { sm?: boolean; block?: boolean; className?: string } = {}): string {
+  return cx(
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-adm-sm border font-semibold no-underline",
+    "transition-[background-color,border-color,color,box-shadow] duration-150 disabled:cursor-not-allowed disabled:opacity-55",
+    opts.sm ? "min-h-8 px-2.5 text-[13px]" : "min-h-9 px-3.5",
+    opts.block && "w-full",
+    BTN_VARIANT[variant],
+    opts.className
+  );
+}
+
+export function iconBtn(danger = false): string {
+  return cx(
+    "inline-grid size-8 place-items-center rounded-adm-sm border border-transparent bg-transparent text-adm-text-2",
+    danger
+      ? "hover:not-disabled:border-[#f0c9c4] hover:not-disabled:bg-adm-danger-soft hover:not-disabled:text-adm-danger"
+      : "hover:not-disabled:border-adm-border hover:not-disabled:bg-adm-surface-2 hover:not-disabled:text-adm-text"
+  );
+}
+
+type Tone = "error" | "warn" | "ok" | "info";
+const BANNER_TONE: Record<Tone, string> = {
+  error: "bg-adm-danger-soft text-adm-danger",
+  warn: "bg-adm-warn-soft text-adm-warn",
+  ok: "bg-adm-ok-soft text-adm-ok",
+  info: "bg-adm-info-soft text-[#2c4f73]",
+};
+export const banner = (tone: Tone) =>
+  cx("mb-3.5 flex items-start gap-2 rounded-adm-sm px-3 py-2.5 text-[13px]", BANNER_TONE[tone]);
+
+export const badge = (accent = false) =>
+  cx(
+    "inline-flex items-center whitespace-nowrap rounded-full border px-2 py-px text-[11px] font-semibold",
+    accent ? "border-[#dbe5c2] bg-adm-accent-soft text-adm-accent-strong" : "border-adm-border bg-adm-surface-2 text-adm-text-2"
+  );
+
+const FIELD_BASE =
+  "min-h-[38px] rounded-adm-sm border bg-adm-surface py-2 transition-[border-color,box-shadow] duration-150 " +
+  "focus:border-adm-accent focus:shadow-[0_0_0_3px_var(--color-adm-accent-ring)] focus:outline-none";
+
+/** Text input. `search` leaves room for the leading search icon. */
+export const input = (opts: { search?: boolean } = {}) =>
+  cx(FIELD_BASE, "w-full border-adm-border-strong", opts.search ? "pr-[11px] pl-[34px]" : "px-[11px]");
+
+/** Select. `full` stretches it (in grids); otherwise it's auto-width, full on phones. */
+export const select = (full = false) =>
+  cx(
+    FIELD_BASE,
+    "min-w-[150px] cursor-pointer border-adm-border-strong px-[11px]",
+    full ? "w-full" : "w-auto max-[600px]:w-full"
+  );
+
+export const textarea = (invalid = false) =>
+  cx(
+    FIELD_BASE,
+    "w-full resize-y px-[11px] leading-[1.55]",
+    invalid ? "border-adm-danger" : "border-adm-border-strong"
+  );
+
+export const ui = {
+  muted: "text-adm-text-3",
+  eyebrow: "m-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-adm-text-3",
+  code: "rounded-[5px] border border-adm-border bg-adm-surface-2 px-1.5 py-px font-mono text-[12px] text-adm-text-2",
+  label: "text-[13px] font-semibold text-adm-text",
+  hint: "m-0 text-[12px] text-adm-text-3",
+  /** Form field; `fieldInForm` drops the bottom margin inside a gapped form grid */
+  field: "mb-3.5 grid gap-1.5",
+  fieldInForm: "grid gap-1.5",
+  card: "rounded-adm border border-adm-border bg-adm-surface p-4 shadow-adm",
+  cardHead: "mb-3.5 flex flex-wrap items-center justify-between gap-3",
+  h2: "mb-1 text-[17px] font-bold",
+  toolbar: "flex items-center gap-2 max-[600px]:flex-wrap",
+  search: "relative flex flex-1 items-center",
+  searchIcon: "pointer-events-none absolute left-[11px] text-adm-text-3",
+  empty: "px-4 py-10 text-center text-adm-text-3",
+  chipStatic:
+    "inline-flex max-w-full items-center rounded-full border border-adm-border bg-adm-surface-2 px-2.5 py-[3px] text-[13px] font-medium text-adm-text-2",
+};
+
+/** Segmented control. `full` makes it a full-width block with equal buttons. */
+export const seg = (full = false) =>
+  cx("gap-0.5 rounded-[9px] bg-[#eef0e8] p-[3px]", full ? "mb-3.5 flex" : "inline-flex");
+
+export const segBtn = (active: boolean, full = false) =>
+  cx(
+    "inline-flex items-center justify-center gap-2 rounded-[7px] px-3.5 py-1.5 font-semibold",
+    full && "flex-1",
+    active ? "bg-adm-surface text-adm-text shadow-[0_1px_2px_rgba(31,36,25,0.12)]" : "bg-transparent text-adm-text-2"
+  );
+
 /* ------------------------------------------------------------------ */
 /* Icons                                                               */
 /* ------------------------------------------------------------------ */
@@ -39,9 +147,9 @@ const paths = {
   chart: "M2.5 13.5h11M4.5 11V8M8 11V4.5M11.5 11V6.5",
 } as const;
 
-export function Icon({ name, size = 16 }: { name: keyof typeof paths; size?: number }) {
+export function Icon({ name, size = 16, className }: { name: keyof typeof paths; size?: number; className?: string }) {
   return (
-    <svg className="adm-icon" width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <svg className={cx("inline shrink-0 align-[-3px]", className)} width={size} height={size} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
       <path d={paths[name]} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -49,9 +157,12 @@ export function Icon({ name, size = 16 }: { name: keyof typeof paths; size?: num
 
 export function Spinner({ label }: { label?: string }) {
   return (
-    <span className="adm-spinner" role="status">
-      <span className="adm-spinner-ring" aria-hidden="true" />
-      {label ? <span>{label}</span> : <span className="adm-sr">Loading</span>}
+    <span className="inline-flex items-center gap-2" role="status">
+      <span
+        className="size-3.5 animate-adm-spin rounded-full border-2 border-current border-r-transparent motion-reduce:[animation-duration:2s]"
+        aria-hidden="true"
+      />
+      {label ? <span>{label}</span> : <span className="sr-only">Loading</span>}
     </span>
   );
 }
@@ -82,14 +193,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={push}>
       {children}
-      <div className="adm-toasts" aria-live="polite" aria-atomic="false">
+      <div
+        className="fixed right-4 bottom-4 z-60 grid w-[min(380px,calc(100vw-32px))] gap-2"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         {toasts.map((t) => (
-          <div key={t.id} className={`adm-toast adm-toast--${t.kind}`} role={t.kind === "error" ? "alert" : "status"}>
-            <Icon name={t.kind === "error" ? "warning" : "check"} />
-            <span>{t.text}</span>
+          <div
+            key={t.id}
+            className={cx(
+              "flex animate-adm-rise items-start gap-2 rounded-adm-sm py-2.5 pr-2 pl-3 text-[13px] text-[#f3f5ee] shadow-adm-lg",
+              t.kind === "error" ? "bg-[#5c1d18]" : "bg-adm-ink"
+            )}
+            role={t.kind === "error" ? "alert" : "status"}
+          >
+            <Icon name={t.kind === "error" ? "warning" : "check"} className={t.kind === "success" ? "text-[#a9c96a]" : undefined} />
+            <span className="flex-1">{t.text}</span>
             <button
               type="button"
-              className="adm-toast-close"
+              className="bg-transparent px-0.5 text-inherit opacity-70"
               aria-label="Dismiss"
               onClick={() => setToasts((list) => list.filter((x) => x.id !== t.id))}
             >
@@ -107,6 +229,8 @@ export const useToast = () => useContext(ToastContext);
 /* ------------------------------------------------------------------ */
 /* Modal with focus trap                                               */
 /* ------------------------------------------------------------------ */
+
+const MODAL_WIDTH = { sm: "max-w-[440px]", md: "max-w-[600px]", lg: "max-w-[760px]" } as const;
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -166,13 +290,16 @@ export function Modal({
 
   return (
     <div
-      className="adm-backdrop"
+      className="fixed inset-0 z-50 grid animate-adm-fade place-items-center bg-[rgba(24,28,18,0.45)] p-4 motion-reduce:animate-none"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget && !busy) onClose();
       }}
     >
       <div
-        className={`adm-modal adm-modal--${size}`}
+        className={cx(
+          "flex max-h-[calc(100vh-32px)] w-full animate-adm-rise flex-col rounded-[14px] bg-adm-surface shadow-adm-lg outline-none motion-reduce:animate-none",
+          MODAL_WIDTH[size]
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -180,19 +307,23 @@ export function Modal({
         tabIndex={-1}
         onKeyDown={onKeyDown}
       >
-        <header className="adm-modal-head">
+        <header className="flex items-start justify-between gap-3 border-b border-adm-border px-5 pt-[18px] pb-3">
           <div>
-            <h2 id={titleId} className="adm-modal-title">
+            <h2 id={titleId} className="m-0 text-[17px] font-bold">
               {title}
             </h2>
-            {subtitle && <p className="adm-modal-sub">{subtitle}</p>}
+            {subtitle && <p className="mt-0.5 text-[13px] text-adm-text-2">{subtitle}</p>}
           </div>
-          <button type="button" className="adm-iconbtn" onClick={onClose} disabled={busy} aria-label="Close">
+          <button type="button" className={iconBtn()} onClick={onClose} disabled={busy} aria-label="Close">
             <Icon name="close" />
           </button>
         </header>
-        <div className="adm-modal-body">{children}</div>
-        {footer && <footer className="adm-modal-foot">{footer}</footer>}
+        <div className="overflow-y-auto px-5 py-4">{children}</div>
+        {footer && (
+          <footer className="flex items-center justify-end gap-2 border-t border-adm-border px-5 pt-3 pb-4 max-[600px]:flex-wrap">
+            {footer}
+          </footer>
+        )}
       </div>
     </div>
   );
@@ -223,12 +354,12 @@ export function ConfirmDialog({
       busy={busy}
       footer={
         <>
-          <button type="button" className="adm-btn adm-btn--ghost" onClick={onCancel} disabled={busy}>
+          <button type="button" className={btn("ghost")} onClick={onCancel} disabled={busy}>
             Cancel
           </button>
           <button
             type="button"
-            className={`adm-btn ${tone === "danger" ? "adm-btn--danger" : "adm-btn--primary"}`}
+            className={btn(tone === "danger" ? "danger" : "primary")}
             onClick={onConfirm}
             disabled={busy}
             data-autofocus
@@ -239,7 +370,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <div className="adm-confirm-body">{body}</div>
+      <div className="[&_p]:m-0 [&_p]:text-adm-text-2">{body}</div>
     </Modal>
   );
 }
@@ -247,6 +378,8 @@ export function ConfirmDialog({
 /* ------------------------------------------------------------------ */
 /* Chip input for dish lists                                           */
 /* ------------------------------------------------------------------ */
+
+const CHIP_BTN = "size-5 rounded-full bg-transparent leading-none text-inherit hover:bg-[rgba(106,130,48,0.15)]";
 
 export const MAX_ITEMS = 20;
 export const MAX_ITEM_LENGTH = 200;
@@ -300,22 +433,28 @@ export function ChipInput({
   };
 
   return (
-    <div className="adm-field">
-      <label className="adm-label" htmlFor={inputId}>
-        {label} <span className="adm-muted">({value.length}/{MAX_ITEMS})</span>
+    <div className={ui.field}>
+      <label className={ui.label} htmlFor={inputId}>
+        {label} <span className={ui.muted}>({value.length}/{MAX_ITEMS})</span>
       </label>
-      <div className="adm-chipbox" onClick={() => document.getElementById(inputId)?.focus()}>
+      <div
+        className="flex min-h-[46px] cursor-text flex-wrap gap-1.5 rounded-adm-sm border border-adm-border-strong bg-adm-surface p-1.5 focus-within:border-adm-accent focus-within:shadow-[0_0_0_3px_var(--color-adm-accent-ring)]"
+        onClick={() => document.getElementById(inputId)?.focus()}>
         {value.map((item, i) => (
-          <span className="adm-chip" key={`${item}-${i}`}>
-            <span className="adm-chip-text">{item}</span>
+          <span
+            className="inline-flex max-w-full items-center gap-0.5 rounded-full bg-adm-accent-soft py-[3px] pr-1 pl-2.5 text-[13px] font-medium text-adm-accent-strong"
+            key={`${item}-${i}`}
+            data-testid="chip"
+          >
+            <span className="truncate">{item}</span>
             {i > 0 && (
-              <button type="button" className="adm-chip-btn" aria-label={`Move ${item} earlier`} onClick={() => move(i, -1)}>
+              <button type="button" className={CHIP_BTN} aria-label={`Move ${item} earlier`} onClick={() => move(i, -1)}>
                 ‹
               </button>
             )}
             <button
               type="button"
-              className="adm-chip-btn"
+              className={CHIP_BTN}
               aria-label={`Remove ${item}`}
               onClick={() => onChange(value.filter((_, j) => j !== i))}
             >
@@ -325,7 +464,7 @@ export function ChipInput({
         ))}
         <input
           id={inputId}
-          className="adm-chip-input"
+          className="min-w-[160px] flex-1 bg-transparent px-1.5 py-1 outline-none"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKeyDown}
@@ -345,7 +484,7 @@ export function ChipInput({
           autoComplete="off"
         />
       </div>
-      <p className="adm-hint">Press Enter or comma to add. Paste a comma-separated list to add many at once.</p>
+      <p className={ui.hint}>Press Enter or comma to add. Paste a comma-separated list to add many at once.</p>
     </div>
   );
 }

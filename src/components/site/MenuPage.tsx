@@ -9,14 +9,15 @@ import Navbar from "./Navbar";
 import ReportProblem from "./ReportProblem";
 import TodayContainer from "./TodayContainer";
 import WeekContainer from "./WeekContainer";
+import { ALERT_DANGER, ALERT_INFO, BTN_PRIMARY, CONTAINER, SHELL, SHELL_MAIN } from "./shellClasses";
 
 function Shell({ children }: { children: ReactNode }) {
   return (
-    <div className="site-shell">
+    <div className={SHELL}>
       <AnnouncementPopup />
       <Navbar />
-      <main className="site-main">{children}</main>
-      <div className="site-bottom">
+      <main className={SHELL_MAIN}>{children}</main>
+      <div className="shrink-0">
         <ReportProblem />
         <Footer />
       </div>
@@ -26,12 +27,15 @@ function Shell({ children }: { children: ReactNode }) {
 
 function Loading({ label }: { label: string }) {
   return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+    <div className="flex justify-center items-center min-h-[60vh]">
       <div className="text-center">
-        <div className="spinner-border" role="status" style={{ color: "#9bb158", width: "3rem", height: "3rem" }}>
-          <span className="visually-hidden">Loading...</span>
+        <div
+          className="inline-block w-12 h-12 align-[-0.125em] rounded-full border-[0.25em] border-current border-r-transparent text-[#9bb158] animate-spin-fast"
+          role="status"
+        >
+          <span className="sr-only">Loading...</span>
         </div>
-        <p className="mt-3">{label}</p>
+        <p className="mt-4">{label}</p>
       </div>
     </div>
   );
@@ -39,11 +43,11 @@ function Loading({ label }: { label: string }) {
 
 function ErrorBox({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="container my-4">
-      <div className="alert alert-danger" role="alert">
-        <h4 className="alert-heading">Error loading menu</h4>
+    <div className={`${CONTAINER} my-6`}>
+      <div className={ALERT_DANGER} role="alert">
+        <h4>Error loading menu</h4>
         <p>{message}</p>
-        <button className="btn btn-primary" onClick={onRetry}>
+        <button className={BTN_PRIMARY} onClick={onRetry}>
           Retry
         </button>
       </div>
@@ -53,8 +57,8 @@ function ErrorBox({ message, onRetry }: { message: string; onRetry: () => void }
 
 function Empty({ label }: { label: string }) {
   return (
-    <div className="container my-4">
-      <div className="alert alert-info" role="alert">
+    <div className={`${CONTAINER} my-6`}>
+      <div className={ALERT_INFO} role="alert">
         {label}
       </div>
     </div>

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { adminFetch } from "./api";
 import type { SlotCurrent } from "./MenuBoard";
 import { MEAL_LABEL, slotLabel, type Meal, type MealType, type SlotRef } from "./types";
-import { ChipInput, Icon, Modal, Spinner, useToast } from "./ui";
+import { badge, btn, ChipInput, cx, Icon, input, Modal, seg, segBtn, select, Spinner, ui, useToast } from "./ui";
 
 type Mode = "pick" | "type";
 
@@ -82,7 +82,7 @@ export default function SlotEditor({
       busy={saving}
       footer={
         <>
-          <p className="adm-foot-note">
+          <p className="mr-auto line-clamp-2 text-[12px] text-adm-text-3 max-[600px]:basis-full">
             {mode === "pick"
               ? selectedMeal
                 ? `Will serve: ${selectedMeal.items.join(", ")}`
@@ -91,33 +91,33 @@ export default function SlotEditor({
                 ? "An identical existing meal is reused; otherwise a new one is created."
                 : "Add at least one dish."}
           </p>
-          <button type="button" className="adm-btn adm-btn--ghost" onClick={onClose} disabled={saving}>
+          <button type="button" className={btn("ghost")} onClick={onClose} disabled={saving}>
             Cancel
           </button>
-          <button type="button" className="adm-btn adm-btn--primary" onClick={save} disabled={!canSave || saving}>
+          <button type="button" className={btn("primary")} onClick={save} disabled={!canSave || saving}>
             {saving ? <Spinner /> : <Icon name="check" />} Save slot
           </button>
         </>
       }
     >
-      <div className="adm-current">
-        <span className="adm-eyebrow">Currently</span>
+      <div className="mb-3.5 flex flex-wrap items-baseline gap-2 rounded-adm-sm border border-adm-border bg-adm-surface-2 px-3 py-2.5">
+        <span className={ui.eyebrow}>Currently</span>
         {current.items.length ? (
           <span>
             {current.meal?.name ? <strong>{current.meal.name}: </strong> : null}
             {current.items.join(", ")}
           </span>
         ) : (
-          <span className="adm-muted">Empty — students see “No menu”</span>
+          <span className={ui.muted}>Empty — students see “No menu”</span>
         )}
       </div>
 
-      <div className="adm-seg adm-seg--full" role="radiogroup" aria-label="How to fill this slot">
+      <div className={seg(true)} role="radiogroup" aria-label="How to fill this slot">
         <button
           type="button"
           role="radio"
           aria-checked={mode === "pick"}
-          className={`adm-seg-btn ${mode === "pick" ? "is-active" : ""}`}
+          className={segBtn(mode === "pick", true)}
           onClick={() => setMode("pick")}
         >
           Choose from library
@@ -126,7 +126,7 @@ export default function SlotEditor({
           type="button"
           role="radio"
           aria-checked={mode === "type"}
-          className={`adm-seg-btn ${mode === "type" ? "is-active" : ""}`}
+          className={segBtn(mode === "type", true)}
           onClick={() => setMode("type")}
         >
           Enter dishes
@@ -135,12 +135,12 @@ export default function SlotEditor({
 
       {mode === "pick" ? (
         <>
-          <div className="adm-toolbar">
-            <label className="adm-search">
-              <Icon name="search" />
-              <span className="adm-sr">Search meals</span>
+          <div className={ui.toolbar}>
+            <label className={ui.search}>
+              <Icon name="search" className={ui.searchIcon} />
+              <span className="sr-only">Search meals</span>
               <input
-                className="adm-input"
+                className={input({ search: true })}
                 placeholder="Search by dish, name or ID"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -149,7 +149,7 @@ export default function SlotEditor({
               />
             </label>
             <select
-              className="adm-input adm-select"
+              className={select()}
               value={category}
               onChange={(e) => setCategory(e.target.value as MealType | "all")}
               aria-label="Filter by category"
@@ -161,9 +161,9 @@ export default function SlotEditor({
             </select>
           </div>
 
-          <ul className="adm-picklist" role="listbox" aria-label="Meals">
+          <ul className="mt-3 grid max-h-[46vh] gap-1.5 overflow-y-auto" role="listbox" aria-label="Meals">
             {filtered.length === 0 && (
-              <li role="presentation" className="adm-empty">
+              <li role="presentation" className={ui.empty}>
                 No meals match. Try another search or enter dishes.
               </li>
             )}
@@ -175,17 +175,28 @@ export default function SlotEditor({
                     type="button"
                     role="option"
                     aria-selected={selected}
-                    className={`adm-pick ${selected ? "is-selected" : ""}`}
+                    className={cx(
+                      "flex w-full items-start gap-2.5 rounded-adm-sm border px-3 py-2.5 text-left",
+                      selected
+                        ? "border-adm-accent bg-adm-accent-soft shadow-[inset_0_0_0_1px_var(--color-adm-accent)]"
+                        : "border-adm-border bg-adm-surface hover:border-adm-border-strong"
+                    )}
                     onClick={() => setSelectedId(m.id)}
                   >
-                    <span className="adm-pick-radio" aria-hidden="true" />
-                    <span className="adm-pick-main">
-                      <span className="adm-pick-title">
+                    <span
+                      className={cx(
+                        "mt-0.5 size-4 shrink-0 rounded-full",
+                        selected ? "border-[5px] border-adm-accent" : "border-2 border-adm-border-strong"
+                      )}
+                      aria-hidden="true"
+                    />
+                    <span className="grid min-w-0 gap-0.5">
+                      <span className="flex flex-wrap items-center gap-1.5 font-semibold">
                         {m.name || m.items.slice(0, 2).join(" + ")}
-                        {m.id === current.id && <span className="adm-badge adm-badge--accent">Current</span>}
-                        {m.category && <span className="adm-badge">{MEAL_LABEL[m.category]}</span>}
+                        {m.id === current.id && <span className={badge(true)}>Current</span>}
+                        {m.category && <span className={badge()}>{MEAL_LABEL[m.category]}</span>}
                       </span>
-                      <span className="adm-pick-items">{m.items.join(", ")}</span>
+                      <span className="text-[13px] text-adm-text-2">{m.items.join(", ")}</span>
                     </span>
                   </button>
                 </li>

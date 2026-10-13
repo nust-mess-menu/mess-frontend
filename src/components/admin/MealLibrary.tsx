@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { adminFetch } from "./api";
 import { MEAL_LABEL, slotShort, type Meal, type MealType, type SlotRef } from "./types";
-import { ChipInput, copyText, downloadJson, Icon, Modal, Spinner, useToast } from "./ui";
+import { badge, banner, btn, ChipInput, copyText, cx, downloadJson, Icon, input, Modal, select, Spinner, ui, useToast } from "./ui";
 
 export default function MealLibrary({
   meals,
@@ -41,14 +41,14 @@ export default function MealLibrary({
   };
 
   return (
-    <section className="adm-card">
-      <div className="adm-card-head">
-        <div className="adm-toolbar adm-toolbar--grow">
-          <label className="adm-search">
-            <Icon name="search" />
-            <span className="adm-sr">Search meals</span>
+    <section className={ui.card}>
+      <div className={ui.cardHead}>
+        <div className={cx(ui.toolbar, "min-w-[260px] flex-1")}>
+          <label className={ui.search}>
+            <Icon name="search" className={ui.searchIcon} />
+            <span className="sr-only">Search meals</span>
             <input
-              className="adm-input"
+              className={input({ search: true })}
               placeholder="Search by dish, name or ID"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -56,7 +56,7 @@ export default function MealLibrary({
             />
           </label>
           <select
-            className="adm-input adm-select"
+            className={select()}
             value={category}
             onChange={(e) => setCategory(e.target.value as typeof category)}
             aria-label="Filter by category"
@@ -67,15 +67,15 @@ export default function MealLibrary({
             <option value="dinner">Dinner</option>
             <option value="none">Uncategorised</option>
           </select>
-          <label className="adm-check">
-            <input type="checkbox" checked={onlyUnused} onChange={(e) => setOnlyUnused(e.target.checked)} />
+          <label className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap text-[13px] text-adm-text-2">
+            <input type="checkbox" className="accent-adm-accent" checked={onlyUnused} onChange={(e) => setOnlyUnused(e.target.checked)} />
             Not on the menu
           </label>
         </div>
-        <div className="adm-toolbar">
+        <div className={ui.toolbar}>
           <button
             type="button"
-            className="adm-btn adm-btn--ghost"
+            className={btn("ghost")}
             onClick={() =>
               downloadJson(
                 "meals.json",
@@ -86,57 +86,62 @@ export default function MealLibrary({
           >
             <Icon name="download" /> Export JSON
           </button>
-          <button type="button" className="adm-btn adm-btn--primary" onClick={() => setEditing("new")}>
+          <button type="button" className={btn("primary")} onClick={() => setEditing("new")}>
             <Icon name="plus" /> New meal
           </button>
         </div>
       </div>
 
-      <p className="adm-muted adm-count">
+      <p className={cx(ui.muted, "mb-2.5 text-[12px]")}>
         Showing {filtered.length} of {meals.length} meals
       </p>
 
       {filtered.length === 0 ? (
-        <div className="adm-empty">
+        <div className={ui.empty}>
           {meals.length === 0 ? "No meals yet. Create one, or assign dishes to a menu slot." : "No meals match these filters."}
         </div>
       ) : (
-        <ul className="adm-meals">
+        <ul className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-2.5 max-[600px]:grid-cols-1">
           {filtered.map((m) => {
             const used = usage.get(m.id) ?? [];
             return (
-              <li key={m.id} className="adm-meal">
-                <div className="adm-meal-head">
-                  <div>
-                    <p className="adm-meal-name">
-                      {m.name || <span className="adm-meal-name--derived">{m.items.slice(0, 2).join(" + ")}</span>}
+              <li key={m.id} className="flex flex-col gap-2.5 rounded-adm-sm border border-adm-border p-3.5" data-testid="meal-card">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="mb-1 font-bold">
+                      {m.name || <span className="font-semibold text-adm-text-2">{m.items.slice(0, 2).join(" + ")}</span>}
                     </p>
-                    <div className="adm-meal-meta">
-                      {m.category && <span className="adm-badge">{MEAL_LABEL[m.category]}</span>}
-                      <button type="button" className="adm-codebtn" onClick={() => copyId(m.id)} title="Copy meal ID">
-                        <code>{m.id}</code>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {m.category && <span className={badge()}>{MEAL_LABEL[m.category]}</span>}
+                      <button
+                        type="button"
+                        className="inline-flex max-w-full items-center gap-[5px] rounded-[5px] border border-adm-border bg-adm-surface-2 px-1.5 py-px text-adm-text-2 hover:border-adm-accent hover:text-adm-accent-strong"
+                        onClick={() => copyId(m.id)}
+                        title="Copy meal ID"
+                      >
+                        <code className="truncate font-mono text-[12px]">{m.id}</code>
                         <Icon name="copy" size={14} />
                       </button>
                     </div>
                   </div>
-                  <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={() => setEditing(m)}>
+                  <button type="button" className={btn("ghost", { sm: true })} onClick={() => setEditing(m)}>
                     <Icon name="edit" /> Edit
                   </button>
                 </div>
-                <div className="adm-chips">
+                <div className="flex flex-wrap gap-1.5">
                   {m.items.map((item, i) => (
-                    <span key={i} className="adm-chip adm-chip--static">
+                    <span key={i} className={ui.chipStatic}>
                       {item}
                     </span>
                   ))}
                 </div>
-                <p className="adm-meal-usage">
+                <p className="mt-auto text-[12px] text-adm-text-2">
                   {used.length ? (
                     <>
                       On the menu: <span>{used.map(slotShort).join(" · ")}</span>
                     </>
                   ) : (
-                    <span className="adm-muted">Not on the menu</span>
+                    <span className={ui.muted}>Not on the menu</span>
                   )}
                 </p>
               </li>
@@ -201,33 +206,33 @@ function MealEditor({
   return (
     <Modal
       title={meal ? "Edit meal" : "New meal"}
-      subtitle={meal ? <code className="adm-code">{meal.id}</code> : "Reusable in any menu slot"}
+      subtitle={meal ? <code className={ui.code}>{meal.id}</code> : "Reusable in any menu slot"}
       onClose={onClose}
       busy={saving}
       footer={
         <>
-          <button type="button" className="adm-btn adm-btn--ghost" onClick={onClose} disabled={saving}>
+          <button type="button" className={btn("ghost")} onClick={onClose} disabled={saving}>
             Cancel
           </button>
-          <button type="button" className="adm-btn adm-btn--primary" onClick={save} disabled={!items.length || saving}>
+          <button type="button" className={btn("primary")} onClick={save} disabled={!items.length || saving}>
             {saving ? <Spinner /> : <Icon name="check" />} {meal ? "Save changes" : "Create meal"}
           </button>
         </>
       }
     >
       {meal && usedIn.length > 0 && (
-        <div className="adm-banner adm-banner--warn">
+        <div className={banner("warn")}>
           <Icon name="warning" /> Changes apply everywhere this meal is served: {usedIn.map(slotShort).join(", ")}.
         </div>
       )}
-      <div className="adm-grid2">
-        <div className="adm-field">
-          <label className="adm-label" htmlFor="meal-name">
-            Display name <span className="adm-muted">(optional)</span>
+      <div className="grid grid-cols-[2fr_1fr] gap-3 max-[600px]:grid-cols-1">
+        <div className={ui.field}>
+          <label className={ui.label} htmlFor="meal-name">
+            Display name <span className={ui.muted}>(optional)</span>
           </label>
           <input
             id="meal-name"
-            className="adm-input"
+            className={input()}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={100}
@@ -235,13 +240,13 @@ function MealEditor({
             data-autofocus
           />
         </div>
-        <div className="adm-field">
-          <label className="adm-label" htmlFor="meal-category">
+        <div className={ui.field}>
+          <label className={ui.label} htmlFor="meal-category">
             Category
           </label>
           <select
             id="meal-category"
-            className="adm-input adm-select"
+            className={select(true)}
             value={category}
             onChange={(e) => setCategory(e.target.value as MealType | "")}
           >

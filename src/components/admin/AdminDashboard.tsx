@@ -7,7 +7,7 @@ import MealLibrary from "./MealLibrary";
 import MenuBoard from "./MenuBoard";
 import StatsPanel from "./StatsPanel";
 import { DAYS, MEAL_TYPES, type Meal, type SlotRef, type Week, type WeekDishes, type WeekIds } from "./types";
-import { ConfirmDialog, Icon, Spinner, ToastProvider, useToast } from "./ui";
+import { banner, btn, ConfirmDialog, cx, Icon, Spinner, ToastProvider, ui, useToast } from "./ui";
 
 type Tab = "menu" | "library" | "bulk" | "stats";
 
@@ -131,43 +131,46 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
   const otherWeek: Week = data?.currentWeek === 1 ? 2 : 1;
 
   return (
-    <div className="adm-shell">
-      <header className="adm-topbar">
-        <div className="adm-topbar-inner">
-          <div className="adm-brand">
+    <div>
+      <header className="sticky top-0 z-20 border-b border-adm-border bg-white/92 backdrop-blur-[8px] backdrop-saturate-[1.4]">
+        <div className="mx-auto flex min-h-[58px] max-w-[1200px] items-center justify-between gap-3 px-5 max-[600px]:px-3.5">
+          <div className="flex items-center gap-2.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/android-chrome-192x192.png" alt="" width={32} height={32} />
-            <span className="adm-brand-name">Mess Menu</span>
-            <span className="adm-brand-tag">Admin</span>
+            <img src="/android-chrome-192x192.png" alt="" width={32} height={32} className="rounded-lg" />
+            <span className="text-[15px] font-bold">Mess Menu</span>
+            <span className="rounded-full bg-adm-accent-soft px-2 py-0.5 text-[11px] font-bold text-adm-accent-strong">Admin</span>
           </div>
-          <div className="adm-topbar-actions">
-            <span className="adm-session" title="Sessions last 8 hours">
+          <div className="flex items-center gap-2">
+            <span className="mr-1 text-[12px] text-adm-text-3 max-[600px]:hidden" title="Sessions last 8 hours">
               Session until {expiresLabel}
             </span>
-            <a className="adm-btn adm-btn--ghost adm-btn--sm" href="/" target="_blank" rel="noopener noreferrer">
-              <Icon name="external" /> <span className="adm-hide-sm">View site</span>
+            <a className={btn("ghost", { sm: true })} href="/" target="_blank" rel="noopener noreferrer">
+              <Icon name="external" /> <span className="max-[600px]:hidden">View site</span>
             </a>
-            <button type="button" className="adm-btn adm-btn--ghost adm-btn--sm" onClick={signOut} disabled={signingOut}>
-              <Icon name="logout" /> <span className="adm-hide-sm">Sign out</span>
+            <button type="button" className={btn("ghost", { sm: true })} onClick={signOut} disabled={signingOut}>
+              <Icon name="logout" /> <span className="max-[600px]:hidden">Sign out</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="adm-main">
-        <section className="adm-hero">
+      <main className="mx-auto max-w-[1200px] px-5 pt-6 pb-12 max-[600px]:px-3.5">
+        <section className="mb-5 flex items-end justify-between gap-4 max-[900px]:flex-col max-[900px]:items-stretch">
           <div>
-            <h1 className="adm-h1">Menu management</h1>
-            <p className="adm-sub">The menu rotates between two weeks. Edits go live for students immediately.</p>
+            <h1 className="mb-1 text-[24px] font-bold tracking-[-0.01em]">Menu management</h1>
+            <p className="text-adm-text-2">The menu rotates between two weeks. Edits go live for students immediately.</p>
           </div>
-          <div className="adm-weekcard" aria-live="polite">
+          <div
+            className="flex items-center gap-[18px] rounded-adm border border-adm-border bg-adm-surface py-3 pr-3.5 pl-[18px] shadow-adm max-[900px]:justify-between"
+            aria-live="polite"
+          >
             <div>
-              <p className="adm-eyebrow">Live this week</p>
-              <p className="adm-weekcard-value">{data ? `Week ${data.currentWeek}` : "—"}</p>
+              <p className={ui.eyebrow}>Live this week</p>
+              <p className="text-[22px] font-bold text-adm-accent-strong" data-testid="live-week">{data ? `Week ${data.currentWeek}` : "—"}</p>
             </div>
             <button
               type="button"
-              className="adm-btn adm-btn--secondary"
+              className={btn("secondary")}
               onClick={() => setConfirmSwitch(true)}
               disabled={!data || switching}
             >
@@ -176,7 +179,7 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
           </div>
         </section>
 
-        <nav className="adm-tabs" role="tablist" aria-label="Admin sections">
+        <nav className="mb-4 flex items-center gap-1 overflow-x-auto border-b border-adm-border" role="tablist" aria-label="Admin sections">
           {(
             [
               ["menu", "calendar", "Weekly menu"],
@@ -190,7 +193,10 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
               type="button"
               role="tab"
               aria-selected={tab === key}
-              className={`adm-tab ${tab === key ? "is-active" : ""}`}
+              className={cx(
+                "-mb-px inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 bg-transparent px-3.5 py-2.5 font-semibold",
+                tab === key ? "border-adm-accent text-adm-accent-strong" : "border-transparent text-adm-text-2 hover:text-adm-text"
+              )}
               onClick={() => setTab(key)}
             >
               <Icon name={icon} /> {label}
@@ -198,26 +204,26 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
           ))}
           <button
             type="button"
-            className="adm-btn adm-btn--ghost adm-btn--sm adm-tabs-refresh"
+            className={btn("ghost", { sm: true, className: "ml-auto" })}
             onClick={load}
             disabled={refreshing}
             aria-label="Reload data"
           >
-            {refreshing ? <Spinner /> : <Icon name="refresh" />} <span className="adm-hide-sm">Reload</span>
+            {refreshing ? <Spinner /> : <Icon name="refresh" />} <span className="max-[600px]:hidden">Reload</span>
           </button>
         </nav>
 
         {loadError && (
-          <div className="adm-banner adm-banner--error" role="alert">
+          <div className={banner("error")} role="alert">
             <Icon name="warning" /> {loadError}
-            <button type="button" className="adm-btn adm-btn--sm adm-btn--ghost" onClick={load}>
+            <button type="button" className={btn("ghost", { sm: true, className: "ml-auto" })} onClick={load}>
               Try again
             </button>
           </div>
         )}
 
         {!data && !loadError && (
-          <div className="adm-loading">
+          <div className={ui.empty}>
             <Spinner label="Loading menu…" />
           </div>
         )}

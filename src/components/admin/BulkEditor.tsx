@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { adminFetch } from "./api";
 import { DAYS, type Week, type WeekIds } from "./types";
-import { ConfirmDialog, downloadJson, Icon, Spinner, useToast } from "./ui";
+import { banner, btn, ConfirmDialog, cx, downloadJson, Icon, Spinner, textarea, ui, useToast } from "./ui";
 
 const MAX_BYTES = 100 * 1024;
 
@@ -132,26 +132,26 @@ export default function BulkEditor({
   };
 
   return (
-    <section className="adm-card">
-      <div className="adm-card-head">
+    <section className={ui.card}>
+      <div className={ui.cardHead}>
         <div>
-          <h2 className="adm-h2">Bulk editor</h2>
-          <p className="adm-muted">
-            Update many slots at once. Use a meal ID (<code className="adm-code">&quot;meal_…&quot;</code>), a list of
-            dishes (<code className="adm-code">[&quot;Paratha&quot;, &quot;Tea&quot;]</code>), or{" "}
-            <code className="adm-code">null</code> to leave a slot unchanged.
+          <h2 className={ui.h2}>Bulk editor</h2>
+          <p className={ui.muted}>
+            Update many slots at once. Use a meal ID (<code className={ui.code}>&quot;meal_…&quot;</code>), a list of
+            dishes (<code className={ui.code}>[&quot;Paratha&quot;, &quot;Tea&quot;]</code>), or{" "}
+            <code className={ui.code}>null</code> to leave a slot unchanged.
           </p>
         </div>
       </div>
 
-      <div className="adm-toolbar adm-toolbar--wrap">
-        <button type="button" className="adm-btn adm-btn--ghost" onClick={loadCurrent}>
+      <div className={cx(ui.toolbar, "mb-3 flex-wrap")}>
+        <button type="button" className={btn("ghost")} onClick={loadCurrent}>
           <Icon name="refresh" /> Load current menu
         </button>
-        <button type="button" className="adm-btn adm-btn--ghost" onClick={() => setEditor(TEMPLATE, false)}>
+        <button type="button" className={btn("ghost")} onClick={() => setEditor(TEMPLATE, false)}>
           Reset to template
         </button>
-        <button type="button" className="adm-btn adm-btn--ghost" onClick={() => fileRef.current?.click()}>
+        <button type="button" className={btn("ghost")} onClick={() => fileRef.current?.click()}>
           <Icon name="upload" /> Import file
         </button>
         <input
@@ -163,7 +163,7 @@ export default function BulkEditor({
         />
         <button
           type="button"
-          className="adm-btn adm-btn--ghost"
+          className={btn("ghost")}
           onClick={() => analysis.ok && downloadJson("menu-bulk.json", analysis.payload)}
           disabled={!analysis.ok}
         >
@@ -171,12 +171,12 @@ export default function BulkEditor({
         </button>
       </div>
 
-      <label className="adm-label" htmlFor="bulk-json">
+      <label className={ui.label} htmlFor="bulk-json">
         Menu JSON
       </label>
       <textarea
         id="bulk-json"
-        className={`adm-textarea adm-mono ${analysis.ok ? "" : "is-invalid"}`}
+        className={cx(textarea(!analysis.ok), "font-mono text-[12px]")}
         value={text}
         onChange={(e) => setEditor(e.target.value, true)}
         rows={24}
@@ -187,7 +187,13 @@ export default function BulkEditor({
         aria-describedby="bulk-status"
       />
 
-      <div id="bulk-status" className={`adm-status ${analysis.ok ? "adm-status--ok" : "adm-status--bad"}`}>
+      <div
+        id="bulk-status"
+        className={cx(
+          "mt-2 mb-3.5 flex items-center gap-1.5 text-[13px] font-medium",
+          analysis.ok ? "text-adm-ok" : "text-adm-danger"
+        )}
+      >
         {analysis.ok ? (
           <>
             <Icon name="check" /> Valid JSON — {analysis.slots} slot{analysis.slots === 1 ? "" : "s"} will be updated
@@ -200,11 +206,11 @@ export default function BulkEditor({
       </div>
 
       {result && (
-        <div className={`adm-banner ${result.failed ? "adm-banner--warn" : "adm-banner--ok"}`}>
+        <div className={banner(result.failed ? "warn" : "ok")} data-testid="bulk-result">
           <div>
-            <p className="adm-strong">{result.message}</p>
+            <p className="m-0 font-semibold">{result.message}</p>
             {result.errors.length > 0 && (
-              <ul className="adm-errlist">
+              <ul className="mt-1.5 list-disc pl-[18px] text-[12px]" data-testid="bulk-errors">
                 {result.errors.map((e, i) => (
                   <li key={i}>{e}</li>
                 ))}
@@ -214,10 +220,10 @@ export default function BulkEditor({
         </div>
       )}
 
-      <div className="adm-actions">
+      <div className="flex justify-end">
         <button
           type="button"
-          className="adm-btn adm-btn--primary"
+          className={btn("primary")}
           onClick={() => setConfirming(true)}
           disabled={!analysis.ok || analysis.slots === 0 || saving}
         >
@@ -232,7 +238,7 @@ export default function BulkEditor({
           body={
             <p>
               <strong>{analysis.slots}</strong> menu slot{analysis.slots === 1 ? "" : "s"} will change. Students see
-              the new menu immediately. Slots set to <code className="adm-code">null</code> are left as they are.
+              the new menu immediately. Slots set to <code className={ui.code}>null</code> are left as they are.
             </p>
           }
           confirmLabel="Apply update"

@@ -4,20 +4,7 @@ import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/next";
 import Providers from "@/components/site/Providers";
 
-// Same stylesheet order as the original app: Bootstrap, then app CSS
 import "@/styles/site.css";
-import "@/styles/vendor/bootstrap-5.3.0-alpha1.min.css";
-import "@/styles/site/fonts.css";
-import "@/styles/site/index.css";
-import "@/styles/site/app.css";
-import "@/styles/site/navbar.css";
-import "@/styles/site/todayContainer.css";
-import "@/styles/site/mealModal.css";
-import "@/styles/site/comments.css";
-import "@/styles/site/WeekContainer.css";
-import "@/styles/site/popups.css";
-import "@/styles/site/reportProblem.css";
-import "@/styles/site/report.css";
 
 // Self-hosted at build time: no request to Google Fonts from the browser.
 // Regular weight only, exactly like the original's Google Fonts link.

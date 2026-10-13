@@ -1,23 +1,22 @@
 export default function Footer() {
   return (
-    <footer className="page-footer custom-footer">
-      <div className="footer-copyright text-center py-2">
-        <div className="footer-content">
+    <footer className="text-[10px] max-[501px]:text-[9px]">
+      <div className="text-center py-2">
+        <div className="flex items-center justify-center gap-2 max-[501px]:flex-col max-[501px]:gap-[2px] max-[501px]:px-[10px]">
           <span>© 2025 Muhammad Fateh</span>
-          <span className="footer-separator">|</span>
+          <span className="inline max-[501px]:hidden">|</span>
           <span>
-            <a id="footerLink" rel="noopener noreferrer" target="_blank" href="https://taaha.dev">
+            <a className="no-underline" rel="noopener noreferrer" target="_blank" href="https://taaha.dev">
               Muhammad Taaha
             </a>
           </span>
-          <span className="footer-separator">|</span>
-          <div className="footer-icons">
+          <span className="inline max-[501px]:hidden">|</span>
+          <div className="flex items-center gap-2">
             <a
-              className="footer-icon-link"
+              className="inline-flex items-center text-inherit hover:text-inherit hover:opacity-70"
               rel="noopener noreferrer"
               target="_blank"
               href="https://github.com/fatehmehmood123/Mess-Menu"
-              style={{ display: "inline-flex", alignItems: "center" }}
               aria-label="GitHub"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -26,11 +25,10 @@ export default function Footer() {
             </a>
             <span>·</span>
             <a
-              className="footer-icon-link"
+              className="inline-flex items-center text-inherit hover:text-inherit hover:opacity-70"
               rel="noopener noreferrer"
               target="_blank"
               href="mailto:fatehmehmood123@gmail.com"
-              style={{ display: "inline-flex", alignItems: "center" }}
               aria-label="Email"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
