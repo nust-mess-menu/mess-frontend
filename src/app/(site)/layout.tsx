@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
+import { preconnect } from "react-dom";
 import { Analytics } from "@vercel/analytics/next";
 import Providers from "@/components/site/Providers";
 
@@ -35,6 +36,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   // nonce-based Content-Security-Policy requires (Next.js applies the nonce
   // to its own scripts; third-party scripts load via 'strict-dynamic')
   await headers();
+
+  // Open the connection to the API (DNS, TCP, TLS: about a second from
+  // Pakistan to the API's region) while the page's scripts are still loading.
+  // "anonymous" matches the browser's credential-less CORS fetches.
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    preconnect(process.env.NEXT_PUBLIC_API_BASE_URL, { crossOrigin: "anonymous" });
+  }
 
   return (
     <html lang="en" className={inter.variable}>
