@@ -44,3 +44,9 @@ next-env.d.ts
 # e2e artifacts
 /e2e/.results
 /playwright-report
+
+# cloudflare
+/.open-next
+/.wrangler
+.dev.vars*
+!.env.production

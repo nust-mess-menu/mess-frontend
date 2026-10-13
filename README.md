@@ -35,7 +35,7 @@ npm run validate                # typecheck + lint + unit tests + production bui
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | What admins type at `/admin/login`. |
 | `BACKEND_ADMIN_USERNAME` / `BACKEND_ADMIN_PASSWORD` | mess-backend's admin credentials, used only from server to server. |
 | `SESSION_SECRET` | Key for the session cookie. ≥ 32 characters. Rotating it signs out every admin. |
-| `TRUSTED_PROXY_HOPS` | **Required in production.** `1` on Vercel or behind one load balancer; `0` if the app is exposed directly. |
+| `TRUSTED_PROXY_HOPS` | **Required in production.** `cloudflare` on Cloudflare Workers; `1` on Vercel or behind one load balancer; `0` if the app is exposed directly. |
 
 In production the server refuses admin traffic if anything is weak or missing:
 - passwords under 16 characters, or repetitive ones;
@@ -108,6 +108,8 @@ npm run test:e2e                # Playwright, using the locally installed Chrome
 ```
 
 ## Deploy
+
+**Cloudflare Workers (production):** `npm run cf:deploy`. See [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md).
 
 **Vercel:** set the env vars above (`TRUSTED_PROXY_HOPS=1`). Vercel Analytics turns on automatically there.
 

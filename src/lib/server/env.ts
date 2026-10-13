@@ -30,7 +30,8 @@ export interface ServerEnv {
   // Key material for encrypting the admin session cookie
   sessionSecret: string;
   // Reverse-proxy hops whose X-Forwarded-For entries are trusted
-  trustedProxyHops: number;
+  // Hop count behind X-Forwarded-For proxies, or "cloudflare" on Workers
+  trustedProxyHops: number | "cloudflare";
 }
 
 const MIN_PASSWORD = 16;
@@ -122,10 +123,15 @@ export function loadServerEnv(env: Record<string, string | undefined> = process.
   // No default in production: getting this wrong either makes client IPs
   // spoofable (too high) or disables per-IP sign-in throttling (0)
   const hopsRaw = read(env, "TRUSTED_PROXY_HOPS") ?? (isProduction ? undefined : "0");
-  if (hopsRaw === undefined) problems.push("TRUSTED_PROXY_HOPS is required in production (1 on Vercel, 0 if exposed directly)");
-  const trustedProxyHops = Number(hopsRaw ?? "0");
-  if (!Number.isInteger(trustedProxyHops) || trustedProxyHops < 0 || trustedProxyHops > 5) {
-    problems.push("TRUSTED_PROXY_HOPS must be an integer between 0 and 5");
+  if (hopsRaw === undefined) {
+    problems.push('TRUSTED_PROXY_HOPS is required in production ("cloudflare" on Workers, 1 on Vercel, 0 if exposed directly)');
+  }
+  const trustedProxyHops: number | "cloudflare" = hopsRaw === "cloudflare" ? "cloudflare" : Number(hopsRaw ?? "0");
+  if (
+    trustedProxyHops !== "cloudflare" &&
+    (!Number.isInteger(trustedProxyHops) || trustedProxyHops < 0 || trustedProxyHops > 5)
+  ) {
+    problems.push('TRUSTED_PROXY_HOPS must be "cloudflare" or an integer between 0 and 5');
   }
 
   if (problems.length) throw new ServerConfigError(problems);

@@ -159,12 +159,19 @@ export async function callBackend(
         ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
       },
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-      redirect: "error",
+      // Never follow redirects (credentials must not reach another host).
+      // "manual" rather than "error": Cloudflare Workers rejects "error".
+      redirect: "manual",
       cache: "no-store",
       signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS),
     });
   } catch (error) {
     console.error("[admin-bff] backend unreachable", { path, error: (error as Error)?.name });
+    return jsonError(502, "The menu server could not be reached. Please try again.", "backend_unreachable");
+  }
+
+  if (response.type === "opaqueredirect" || (response.status >= 300 && response.status < 400)) {
+    console.error("[admin-bff] backend tried to redirect; refused", { path, status: response.status });
     return jsonError(502, "The menu server could not be reached. Please try again.", "backend_unreachable");
   }
 

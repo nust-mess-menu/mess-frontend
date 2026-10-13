@@ -160,10 +160,18 @@ describe("admin BFF routes", () => {
     expect(res.status).toBe(200);
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe("https://api.example.edu/api/admin/menu");
-    expect(init.redirect).toBe("error");
+    expect(init.redirect).toBe("manual");
     const auth = (init.headers as Record<string, string>).Authorization;
     expect(Buffer.from(auth.replace("Basic ", ""), "base64").toString()).toBe(`${ENV.BACKEND_ADMIN_USERNAME}:${ENV.BACKEND_ADMIN_PASSWORD}`);
     expect(JSON.parse(String(init.body))).toEqual({ weekNumber: 1, day: "monday", mealType: "lunch", dishes: ["Daal"] });
+  });
+
+  it("refuses backend redirects (credentials never follow them)", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 302, headers: { Location: "https://evil.example/" } }));
+    const { GET } = await import("@/app/api/admin/stats/route");
+    const res = await GET(req("/api/admin/stats", { session: true }));
+    expect(res.status).toBe(502);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("validates input before it reaches the backend", async () => {

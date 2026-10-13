@@ -1,0 +1,10 @@
+# Cloudflare Workers static assets (served without running the worker)
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+/*
+  X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Resource-Policy: same-origin

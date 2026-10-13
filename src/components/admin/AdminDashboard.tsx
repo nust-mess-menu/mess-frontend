@@ -127,7 +127,7 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
     window.location.replace("/admin/login");
   };
 
-  const expiresLabel = new Date(sessionExpiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const expiresLabel = new Date(sessionExpiresAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Karachi" });
   const otherWeek: Week = data?.currentWeek === 1 ? 2 : 1;
 
   return (

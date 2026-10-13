@@ -53,6 +53,12 @@ describe("clientIp / requestHost", () => {
     expect(requestHost(h({ host: "internal:3000", "x-forwarded-host": "admin.example.edu" }), 1)).toBe("admin.example.edu");
     expect(requestHost(h({ host: "mess.example.edu", "x-forwarded-host": "admin.example.edu" }), 0)).toBe("mess.example.edu");
   });
+
+  it("on Cloudflare trusts only CF-Connecting-IP and Host", () => {
+    expect(clientIp(h({ "cf-connecting-ip": "1.2.3.4", "x-forwarded-for": "6.6.6.6" }), "cloudflare")).toBe("1.2.3.4");
+    expect(clientIp(h({ "x-forwarded-for": "6.6.6.6" }), "cloudflare")).toBeNull();
+    expect(requestHost(h({ host: "mess.example.edu", "x-forwarded-host": "admin.example.edu" }), "cloudflare")).toBe("mess.example.edu");
+  });
 });
 
 describe("server env", () => {

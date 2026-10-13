@@ -32,14 +32,17 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
   const active = useActiveMeal();
   const { isSubmitting, submit, successModal } = useMealRating();
 
+  // Pakistan time on both server and browser, so the two renders always agree
   const currentDate = new Date();
   const currentFormattedDate = currentDate.toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "Asia/Karachi",
   });
-  const dayOfWeek = currentDate.getDay();
+  const pktWeekday = currentDate.toLocaleDateString("en-US", { weekday: "short", timeZone: "Asia/Karachi" });
+  const dayOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(pktWeekday);
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
   const timings: Record<MealType, ReactNode> = {

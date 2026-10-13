@@ -14,11 +14,16 @@
     "e2e:emulators": "docker build -t mess-emu e2e/emulator && docker run -d --rm --name mess-emu -p 8085:8085 -p 9099:9099 mess-emu",
     "e2e:reset": "./e2e/reset-stack.sh",
     "e2e:build": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-mess NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo-mess.firebaseapp.com NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 next build",
-    "e2e:start": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-mess NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo-mess.firebaseapp.com NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 next start -p 3000 -H 127.0.0.1"
+    "e2e:start": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-mess NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo-mess.firebaseapp.com NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 next start -p 3000 -H 127.0.0.1",
+    "cf:build": "./scripts/cf-build.sh",
+    "cf:preview": "./scripts/cf-build.sh && opennextjs-cloudflare preview",
+    "cf:deploy": "./scripts/cf-build.sh && opennextjs-cloudflare deploy",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@firebase/app": "0.16.3",
     "@firebase/auth": "1.13.7",
+    "@opennextjs/cloudflare": "1.20.10",
     "@reduxjs/toolkit": "2.13.0",
     "@vercel/analytics": "2.0.1",
     "next": "16.4.0",
@@ -36,11 +41,17 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "patch-package": "8.0.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
-    "vitest": "5.0.4"
+    "vitest": "5.0.4",
+    "wrangler": "4.150.0"
   },
   "engines": {
     "node": ">=20.9.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "workerd@1.20261006.1": true
   }
 }

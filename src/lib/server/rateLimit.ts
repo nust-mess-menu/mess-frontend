@@ -84,6 +84,9 @@ export function failureDelayMs(now: number = Date.now()): number {
   return 600;
 }
 
+/** Proxy hop count, or "cloudflare" when running on Cloudflare Workers. */
+export type ProxyTrust = number | "cloudflare";
+
 /**
  * Client IP from X-Forwarded-For, trusting exactly the configured number of
  * proxy hops counted from the right (the end proxies append to).
@@ -93,22 +96,26 @@ export function failureDelayMs(now: number = Date.now()): number {
  * expected proxies). Callers then skip per-IP locking rather than lumping
  * everyone into one bucket an attacker could lock.
  */
-export function clientIp(headers: Headers, trustedHops: number): string | null {
+export function clientIp(headers: Headers, trustedHops: ProxyTrust): string | null {
+  const valid = (ip: string | null | undefined) =>
+    ip && ip.length <= 64 && /^[0-9a-fA-F.:]+$/.test(ip) ? ip : null;
+  // On Cloudflare Workers the edge sets CF-Connecting-IP itself; clients cannot forge it
+  if (trustedHops === "cloudflare") return valid(headers.get("cf-connecting-ip")?.trim());
   if (trustedHops <= 0) return null;
   const forwarded = headers.get("x-forwarded-for");
   if (!forwarded) return null;
   const hops = forwarded.split(",").map((s) => s.trim()).filter(Boolean);
   if (hops.length < trustedHops) return null;
-  const candidate = hops[hops.length - trustedHops];
-  return candidate && candidate.length <= 64 && /^[0-9a-fA-F.:]+$/.test(candidate) ? candidate : null;
+  return valid(hops[hops.length - trustedHops]);
 }
 
 /**
  * The host the client asked for. Behind trusted proxies, X-Forwarded-Host
  * (rightmost trusted entry) carries the public host; otherwise Host.
  */
-export function requestHost(headers: Headers, trustedHops: number): string | null {
-  if (trustedHops > 0) {
+export function requestHost(headers: Headers, trustedHops: ProxyTrust): string | null {
+  // On Workers, Host is the hostname Cloudflare routed on
+  if (typeof trustedHops === "number" && trustedHops > 0) {
     const forwarded = headers.get("x-forwarded-host");
     if (forwarded) {
       const hosts = forwarded.split(",").map((s) => s.trim()).filter(Boolean);
