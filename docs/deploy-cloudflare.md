@@ -76,16 +76,23 @@ custom domain, and the admin console returns 404 locally.
 - **Per-instance memory:** sign-in throttling and session revocation live in memory per
   Worker instance. That's fine for one admin. Move them to Workers KV if that changes.
 
-## Adding another domain (e.g. eat.deeznust.com)
+## Domains we don't own (eat.deeznust.com)
 
-A Workers custom domain must belong to a zone in **this** Cloudflare account.
-1. Add `deeznust.com` to this account (free plan), or have its owner add you as a member of their account.
-   Then point the domain's nameservers at Cloudflare.
-2. Add `{ "pattern": "eat.deeznust.com", "custom_domain": true }` to `routes` in `wrangler.jsonc`.
-   If it becomes the main site, set `SITE_URL` to it as well.
-3. Append the origin to the backend's `FRONTEND_URL` on Heroku.
-4. Add the domain to Firebase Auth's authorized domains and to Userback's domains.
-5. Run `npm run cf:deploy`.
+These are served through **Cloudflare for SaaS** custom hostnames on the `taaha.dev`
+zone. They're free for the first 100 hostnames, and the domain owner only adds DNS
+records; nothing is transferred.
+
+Our side (one time, in the dashboard: the Wrangler OAuth token can't manage custom hostnames):
+1. Add a DNS record on `taaha.dev`: `AAAA saas-fallback 100::`, **Proxied**. It's a placeholder origin; the Worker answers.
+2. SSL/TLS → Custom Hostnames: enable, then set the fallback origin to `saas-fallback.taaha.dev`.
+3. Add custom hostname `eat.deeznust.com` (certificate validation: TXT).
+   Send the domain owner the TXT records it shows.
+4. `wrangler.jsonc` has the route `eat.deeznust.com/*` on zone `taaha.dev`. Run `npm run cf:deploy`.
+5. Add the origin to the backend's `FRONTEND_URL` (done for eat.deeznust.com).
+
+Domain owner:
+- `CNAME eat → saas-fallback.taaha.dev`, **DNS only (grey cloud)** if their zone is on Cloudflare.
+- The TXT records from step 3 (they can be removed once the hostname and certificate are Active).
 
 ## Outside Cloudflare, per domain
 

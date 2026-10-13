@@ -12,7 +12,10 @@
   // Student site and admin console on separate hosts (see README: recommended layout)
   "routes": [
     { "pattern": "eat.taaha.dev", "custom_domain": true },
-    { "pattern": "eat-admin.taaha.dev", "custom_domain": true }
+    { "pattern": "eat-admin.taaha.dev", "custom_domain": true },
+    // Friend's domain via Cloudflare for SaaS: a custom hostname on the
+    // taaha.dev zone (docs/deploy-cloudflare.md)
+    { "pattern": "eat.deeznust.com/*", "zone_name": "taaha.dev" }
   ],
   "workers_dev": false,
   "preview_urls": false,
