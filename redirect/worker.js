@@ -1,6 +1,6 @@
-// eat.taaha.dev -> eat.oddmancy.com (the site's old address).
+// Old addresses of the site -> nustmessmenu.oddmancy.com.
 // Permanent redirect keeping path and query, so old links and bookmarks work.
-const TARGET = "https://eat.oddmancy.com";
+const TARGET = "https://nustmessmenu.oddmancy.com";
 
 export default {
   fetch(request) {

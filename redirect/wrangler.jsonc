@@ -1,9 +1,12 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
-  "name": "eat-taaha-redirect",
+  "name": "nustmessmenu-redirect",
   "main": "worker.js",
   "compatibility_date": "2026-10-01",
-  "routes": [{ "pattern": "eat.taaha.dev", "custom_domain": true }],
+  "routes": [
+    { "pattern": "eat.taaha.dev", "custom_domain": true },
+    { "pattern": "eat.oddmancy.com", "custom_domain": true }
+  ],
   "workers_dev": false,
   "preview_urls": false
 }

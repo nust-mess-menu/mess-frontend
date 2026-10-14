@@ -3,10 +3,10 @@
 The frontend runs on Cloudflare Workers through the OpenNext adapter
 (`@opennextjs/cloudflare`):
 
-- **Student site:** `https://eat.oddmancy.com` (`https://eat.taaha.dev` permanently redirects here, via the tiny `redirect/` worker)
-- **Admin console:** `https://eat-admin.oddmancy.com`. It has its own host, so student-side
+- **Student site:** `https://nustmessmenu.oddmancy.com` (old addresses `eat.oddmancy.com` and `eat.taaha.dev` permanently redirect here, via the tiny `redirect/` worker)
+- **Admin console:** `https://nustmessmenu-admin.oddmancy.com`. It has its own host, so student-side
   scripts never share the admin's origin.
-- **Backend:** `https://mess-menu-backend.taaha.dev` (Heroku)
+- **Backend:** `https://eat-api.oddmancy.com` (Heroku)
 
 The free Workers plan allows 100,000 requests a day. Beyond that, requests fail until
 the next day; there's never a bill. Static assets (`/_next/static`, icons) are served
@@ -38,7 +38,7 @@ npx wrangler secret put SESSION_SECRET           # openssl rand -base64 48
 On the backend, allow the site origin (already done):
 
 ```bash
-heroku config:set FRONTEND_URL=https://eat.oddmancy.com,... -a nust-mess-backend
+heroku config:set FRONTEND_URL=https://nustmessmenu.oddmancy.com,... -a nust-mess-backend
 ```
 
 ## Deploy
@@ -78,8 +78,9 @@ custom domain, and the admin console returns 404 locally.
 
 ## Old address redirect
 
-`redirect/` is a separate, 15-line Worker (`eat-taaha-redirect`) that owns `eat.taaha.dev` and
-answers every request with a 301 to the same path on `eat.oddmancy.com`. Deploy it with
+`redirect/` is a separate, 15-line Worker (`nustmessmenu-redirect`) that owns `eat.taaha.dev` and
+`eat.oddmancy.com` and answers every request with a 301 to the same path on
+`nustmessmenu.oddmancy.com`. Deploy it with
 `cd redirect && npx wrangler deploy`.
 
 ## Outside Cloudflare, per domain
