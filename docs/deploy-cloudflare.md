@@ -3,8 +3,8 @@
 The frontend runs on Cloudflare Workers through the OpenNext adapter
 (`@opennextjs/cloudflare`):
 
-- **Student site:** `https://eat.taaha.dev`
-- **Admin console:** `https://eat-admin.taaha.dev`. It has its own host, so student-side
+- **Student site:** `https://eat.oddmancy.com` (`https://eat.taaha.dev` permanently redirects here, via the tiny `redirect/` worker)
+- **Admin console:** `https://eat-admin.oddmancy.com`. It has its own host, so student-side
   scripts never share the admin's origin.
 - **Backend:** `https://mess-menu-backend.taaha.dev` (Heroku)
 
@@ -38,7 +38,7 @@ npx wrangler secret put SESSION_SECRET           # openssl rand -base64 48
 On the backend, allow the site origin (already done):
 
 ```bash
-heroku config:set FRONTEND_URL=https://eat.taaha.dev,... -a nust-mess-backend
+heroku config:set FRONTEND_URL=https://eat.oddmancy.com,... -a nust-mess-backend
 ```
 
 ## Deploy
@@ -48,7 +48,7 @@ npm run cf:deploy
 ```
 
 The first deploy creates both custom domains and their DNS records and certificates on
-the `taaha.dev` zone automatically.
+the `oddmancy.com` zone automatically.
 
 ## Local preview on the Workers runtime
 
@@ -76,23 +76,11 @@ custom domain, and the admin console returns 404 locally.
 - **Per-instance memory:** sign-in throttling and session revocation live in memory per
   Worker instance. That's fine for one admin. Move them to Workers KV if that changes.
 
-## Domains we don't own (eat.deeznust.com)
+## Old address redirect
 
-These are served through **Cloudflare for SaaS** custom hostnames on the `taaha.dev`
-zone. They're free for the first 100 hostnames, and the domain owner only adds DNS
-records; nothing is transferred.
-
-Our side (one time, in the dashboard: the Wrangler OAuth token can't manage custom hostnames):
-1. Add a DNS record on `taaha.dev`: `AAAA saas-fallback 100::`, **Proxied**. It's a placeholder origin; the Worker answers.
-2. SSL/TLS → Custom Hostnames: enable, then set the fallback origin to `saas-fallback.taaha.dev`.
-3. Add custom hostname `eat.deeznust.com` (certificate validation: TXT).
-   Send the domain owner the TXT records it shows.
-4. `wrangler.jsonc` has the route `eat.deeznust.com/*` on zone `taaha.dev`. Run `npm run cf:deploy`.
-5. Add the origin to the backend's `FRONTEND_URL` (done for eat.deeznust.com).
-
-Domain owner:
-- `CNAME eat → saas-fallback.taaha.dev`, **DNS only (grey cloud)** if their zone is on Cloudflare.
-- The TXT records from step 3 (they can be removed once the hostname and certificate are Active).
+`redirect/` is a separate, 15-line Worker (`eat-taaha-redirect`) that owns `eat.taaha.dev` and
+answers every request with a 301 to the same path on `eat.oddmancy.com`. Deploy it with
+`cd redirect && npx wrangler deploy`.
 
 ## Outside Cloudflare, per domain
 
