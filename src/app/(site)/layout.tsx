@@ -11,6 +11,9 @@ import "@/styles/site.css";
 const inter = Inter({ weight: "400", subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
+  // Absolute canonical URLs, so links from the old addresses consolidate here
+  metadataBase: new URL("https://nustmessmenu.oddmancy.com"),
+  alternates: { canonical: "/" },
   title: "Mess Menu - NUST Hostels",
   description: "Today's and this week's mess menu for NUST hostels, with ratings and reviews.",
   manifest: "/site.webmanifest",
