@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { headers } from "next/headers";
 import { preconnect } from "react-dom";
 import { Analytics } from "@vercel/analytics/next";
 import Providers from "@/components/site/Providers";
@@ -31,12 +30,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  // Reading request headers opts every page into dynamic rendering, which the
-  // nonce-based Content-Security-Policy requires (Next.js applies the nonce
-  // to its own scripts; third-party scripts load via 'strict-dynamic')
-  await headers();
-
+// Student pages are static: built once and served straight from Cloudflare's
+// CDN, with no per-request rendering (the free Workers plan allows only 10 ms
+// of CPU per request). Their Content-Security-Policy uses hashes of the inline
+// scripts, computed at build time by scripts/build-static-site.mjs.
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
   // Open the connection to the API (DNS, TCP, TLS: about a second from
   // Pakistan to the API's region) while the page's scripts are still loading.
   // "anonymous" matches the browser's credential-less CORS fetches.

@@ -8,15 +8,27 @@ The frontend runs on Cloudflare Workers through the OpenNext adapter
   scripts never share the admin's origin.
 - **Backend:** `https://eat-api.oddmancy.com` (Heroku)
 
-The free Workers plan allows 100,000 requests a day. Beyond that, requests fail until
-the next day; there's never a bill. Static assets (`/_next/static`, icons) are served
-from Cloudflare's CDN and don't count as Worker requests.
+**Two deployments, because the free plan allows only 10 ms of CPU per Worker request**
+(server-rendering a Next.js page takes more, which showed up as Error 1102):
+
+| Host | What | Config |
+|---|---|---|
+| `nustmessmenu.oddmancy.com` | Student site as **static files** (no Worker runs, no CPU limit, no request quota) | `site/wrangler.jsonc` |
+| `nustmessmenu-admin.oddmancy.com` | Admin console + admin API (OpenNext Worker) | `wrangler.jsonc` |
+
+Student pages are prerendered at build time. Their CSP can't use a per-request
+nonce, so `scripts/build-static-site.mjs` hashes every inline script in the built
+pages and writes the policy, plus the security and cache headers, to `_headers`.
+Keep student pages static: the build fails if one turns dynamic or carries a nonce.
+The admin is still server-rendered and subject to the 10 ms limit, but only admins use it.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `wrangler.jsonc` | Worker name, custom domains, and non-secret runtime vars (`ADMIN_URL`, `SITE_URL`, `BACKEND_URL`, `TRUSTED_PROXY_HOPS=cloudflare`, `NODE_ENV`). |
+| `site/wrangler.jsonc` | The static student site (assets only, 404 page, custom domain). |
+| `scripts/build-static-site.mjs` | Assembles `.static-site/`: prerendered pages, assets, hash-based CSP `_headers`. |
+| `wrangler.jsonc` | Admin Worker name, custom domain, and non-secret runtime vars (`ADMIN_URL`, `SITE_URL`, `BACKEND_URL`, `TRUSTED_PROXY_HOPS=cloudflare`, `NODE_ENV`). |
 | `open-next.config.ts` | Adapter config. There's no incremental cache, because every page is rendered per request for the CSP nonce. |
 | `.env.production` | Public `NEXT_PUBLIC_*` build values, including the production API URL. Never put secrets here. |
 | `scripts/cf-build.sh` | Builds with `.env.local` moved aside. OpenNext embeds every `.env*` file into the worker, and this keeps local credentials out of it. |

@@ -16,3 +16,5 @@ restore() { for f in "${moved[@]:-}"; do [[ -n "$f" ]] && mv "$f.cf-build-bak" "
 trap restore EXIT
 
 npx opennextjs-cloudflare build
+# Student pages as plain static files (site/wrangler.jsonc)
+node --no-warnings --env-file=.env.production scripts/build-static-site.mjs

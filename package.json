@@ -17,7 +17,7 @@
     "e2e:start": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-mess NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=demo-mess.firebaseapp.com NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 next start -p 3000 -H 127.0.0.1",
     "cf:build": "./scripts/cf-build.sh",
     "cf:preview": "./scripts/cf-build.sh && opennextjs-cloudflare preview",
-    "cf:deploy": "./scripts/cf-build.sh && opennextjs-cloudflare deploy",
+    "cf:deploy": "./scripts/cf-build.sh && opennextjs-cloudflare deploy && wrangler deploy -c site/wrangler.jsonc",
     "postinstall": "patch-package"
   },
   "dependencies": {

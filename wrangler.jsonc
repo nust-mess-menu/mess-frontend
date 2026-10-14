@@ -9,11 +9,9 @@
     "binding": "ASSETS"
   },
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "mess-frontend" }],
-  // Student site and admin console on separate hosts (see README: recommended layout)
-  "routes": [
-    { "pattern": "nustmessmenu.oddmancy.com", "custom_domain": true },
-    { "pattern": "nustmessmenu-admin.oddmancy.com", "custom_domain": true }
-  ],
+  // Admin console only. The student site is static files on its own host
+  // (site/wrangler.jsonc), so it never runs this Worker.
+  "routes": [{ "pattern": "nustmessmenu-admin.oddmancy.com", "custom_domain": true }],
   "workers_dev": false,
   "preview_urls": false,
   "observability": { "enabled": true },

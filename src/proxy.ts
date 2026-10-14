@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { adminCsp, siteCsp } from "@/lib/csp";
+import { adminCsp } from "@/lib/csp";
 import { serverEnv, ServerConfigError, type ServerEnv } from "@/lib/server/env";
 import { requestHost } from "@/lib/server/rateLimit";
 import { openSession, sessionCookieName } from "@/lib/server/session";
@@ -51,22 +51,14 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  // Student pages are static HTML (no nonce to match); in production their CSP
+  // comes from the hash-based _headers file served with the static site
+  if (!isAdmin) return NextResponse.next();
+
   const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64");
   const host = request.nextUrl.hostname;
   const upgradeInsecure = !isDev && host !== "localhost" && host !== "127.0.0.1";
-  const csp = isAdmin
-    ? adminCsp({ nonce, isDev, upgradeInsecure })
-    : siteCsp({
-        nonce,
-        isDev,
-        upgradeInsecure,
-        apiOrigin: new URL(process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").origin,
-        firebaseAuthDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "",
-        userbackEnabled: Boolean(process.env.NEXT_PUBLIC_USERBACK_TOKEN),
-        authEmulatorOrigin: process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST
-          ? `http://${process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST}`
-          : undefined,
-      });
+  const csp = adminCsp({ nonce, isDev, upgradeInsecure });
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);

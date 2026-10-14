@@ -18,7 +18,9 @@ const squash = (directives: Record<string, string[]>) =>
     .join("; ");
 
 interface CspOptions {
-  nonce: string;
+  // Per-request nonce (dynamic pages) or build-time hashes of inline scripts (static pages)
+  nonce?: string;
+  scriptHashes?: string[];
   isDev: boolean;
   // false only for loopback hosts, where https does not exist
   upgradeInsecure: boolean;
@@ -30,6 +32,7 @@ interface CspOptions {
 
 export function siteCsp({
   nonce,
+  scriptHashes = [],
   isDev,
   upgradeInsecure,
   apiOrigin,
@@ -41,7 +44,11 @@ export function siteCsp({
   const emulator = authEmulatorOrigin ? [authEmulatorOrigin] : [];
   return squash({
     "default-src": ["'self'"],
-    "script-src": ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", ...(isDev ? ["'unsafe-eval'"] : [])],
+    "script-src": nonce
+      ? ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", ...(isDev ? ["'unsafe-eval'"] : [])]
+      : // Static pages: their own inline scripts by hash, bundles from 'self', and
+        // the scripts sign-in and the feedback widget load, by host
+        ["'self'", ...scriptHashes.map((h) => `'${h}'`), "https://apis.google.com", ...userback],
     "style-src": ["'self'", "'unsafe-inline'", ...userback],
     "img-src": ["'self'", "data:", "blob:", "https://lh3.googleusercontent.com", ...userback],
     "font-src": ["'self'", "data:", ...userback],
@@ -67,7 +74,7 @@ export function siteCsp({
   });
 }
 
-export function adminCsp({ nonce, isDev, upgradeInsecure }: Pick<CspOptions, "nonce" | "isDev" | "upgradeInsecure">): string {
+export function adminCsp({ nonce, isDev, upgradeInsecure }: { nonce: string; isDev: boolean; upgradeInsecure: boolean }): string {
   return squash({
     "default-src": ["'self'"],
     "script-src": ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", ...(isDev ? ["'unsafe-eval'"] : [])],

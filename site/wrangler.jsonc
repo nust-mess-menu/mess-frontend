@@ -1,0 +1,15 @@
+{
+  // Student site: static files only (built by scripts/build-static-site.mjs).
+  // No Worker script runs, so there is no CPU limit and no request quota.
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "nustmessmenu-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../.static-site",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "nustmessmenu.oddmancy.com", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false
+}
