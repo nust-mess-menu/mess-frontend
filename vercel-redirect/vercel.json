@@ -2,9 +2,17 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     {
-      "source": "/:path*",
-      "destination": "https://nustmessmenu.oddmancy.com/:path*",
+      "source": "/",
+      "destination": "https://nustmessmenu.oddmancy.com/",
+      "statusCode": 301
+    },
+    {
+      "source": "/:path+",
+      "destination": "https://nustmessmenu.oddmancy.com/:path+",
       "statusCode": 301
     }
-  ]
+  ],
+  "outputDirectory": "public",
+  "buildCommand": "",
+  "framework": null
 }
