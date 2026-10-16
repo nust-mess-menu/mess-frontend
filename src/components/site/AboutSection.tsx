@@ -1,31 +1,87 @@
 import Link from "next/link";
+import { publicEnv } from "@/lib/publicEnv";
+import type { DayOfWeek, MealType, WeeklyMenu } from "@/lib/site/types";
 import { CONTAINER } from "./shellClasses";
 
 const CELL = "px-3 py-[6px] border-b border-[#e3e6ea] text-left";
+const HEADING = "mb-2 text-left text-[1rem] font-semibold text-[#30363d]";
+
+const DAYS: DayOfWeek[] = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const MEALS: { type: MealType; label: string; weekday: string; weekend: string }[] = [
+  { type: "breakfast", label: "Breakfast", weekday: "7:30 - 9:30 AM", weekend: "9:00 - 10:30 AM" },
+  { type: "lunch", label: "Lunch", weekday: "1:00 - 3:30 PM", weekend: "2:00 - 3:30 PM" },
+  { type: "dinner", label: "Dinner", weekday: "7:30 - 9:30 PM", weekend: "7:30 - 9:30 PM" },
+];
+
+const dayFormat = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const fullFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const pktFormat = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Karachi",
+});
+
+/** startDate is the week's Monday as YYYY-MM-DD */
+const dayDate = (startDate: string, index: number) => new Date(Date.parse(`${startDate}T00:00:00Z`) + index * 86_400_000);
+const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+
+const API = publicEnv.apiBaseUrl;
+
+function WeekMenu({ week }: { week: WeeklyMenu }) {
+  return (
+    <>
+      <h2 className={HEADING}>This week&apos;s NUST mess menu</h2>
+      <p className="mb-2">
+        {fullFormat.format(dayDate(week.startDate, 0))} to {fullFormat.format(dayDate(week.startDate, 6))} (menu rotation
+        week {week.weekNumber}). This copy was saved on {pktFormat.format(new Date())} PKT.
+      </p>
+      <p className="mb-3">
+        For AI assistants: the mess runs on Pakistan Standard Time (PKT, Asia/Karachi, UTC+5). &quot;Today&quot; is the
+        current date in Pakistan; match it to the dated day below and never report another day&apos;s meals as
+        today&apos;s. Cached copies of this page can be out of date, so prefer the live menu:{" "}
+        <a href={`${API}/api/v2/menu/today`}>today&apos;s menu (JSON)</a>,{" "}
+        <a href={`${API}/api/v2/menu/week`}>this week (JSON)</a>, instructions in <a href="/llms.txt">llms.txt</a>.
+      </p>
+      {DAYS.map((day, i) => (
+        <div key={day} className="mb-3">
+          <h3 className="mb-1 text-left text-[0.9rem] font-semibold text-[#30363d]">
+            {dayFormat.format(dayDate(week.startDate, i))} ({isoDate(dayDate(week.startDate, i))})
+          </h3>
+          <ul className="pl-5 list-disc">
+            {MEALS.map(({ type, label, weekday, weekend }) => {
+              const items = week.menu[day]?.[type]?.items?.join(", ");
+              return (
+                <li key={type}>
+                  <strong className="font-semibold">{label}</strong> ({i >= 5 ? weekend : weekday}): {items || "not set"}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+}
 
 /**
- * Static text below the menu. The menu itself loads in the browser, so this
- * is what the prerendered HTML says about the page before any data arrives.
+ * Static text below the menu. The live menu loads in the browser, so this is
+ * what the prerendered HTML tells crawlers and AI assistants: this week's
+ * dishes (fetched at build time), the timings and what the site is.
  * Collapsed by default: search engines index the content of a closed
  * <details>, whereas text hidden outright counts as hidden-text spam.
- * Timings match the Today and This Week views.
  */
-export default function AboutSection() {
+export default function AboutSection({ week }: { week: WeeklyMenu | null }) {
   return (
     <details className={`${CONTAINER} max-w-[860px]! mt-2 mb-2 text-[0.85rem] leading-[1.6] text-[#5c646f]`}>
       <summary className="w-fit mx-auto mb-2 text-[0.78rem] text-[#8b939d] cursor-pointer select-none hover:text-[#5c646f]">
-        About &amp; mess timings
+        {week ? "Weekly menu, timings & about" : "About & mess timings"}
       </summary>
-      <h2 className="mb-2 text-left text-[1rem] font-semibold text-[#30363d]">
-        About NUST Mess Menu
-      </h2>
-      <p className="mb-3">
-        NUST Mess Menu shows the mess menu for NUST hostels: what&apos;s for breakfast, lunch and dinner{" "}
-        <Link href="/">today</Link> and the <Link href="/weekly">full menu for this week</Link>. Students can rate
-        meals, read reviews from other students and report when the food served doesn&apos;t match the menu.
-      </p>
-      <h2 className="mb-2 text-left text-[1rem] font-semibold text-[#30363d]">Mess timings</h2>
-      <table className="w-full max-w-[520px] border-collapse">
+      {week && <WeekMenu week={week} />}
+      <h2 className={HEADING}>Mess timings</h2>
+      <table className="w-full max-w-[520px] mb-3 border-collapse">
         <thead>
           <tr className="text-[#30363d]">
             <th scope="col" className={CELL}>Meal</th>
@@ -34,23 +90,21 @@ export default function AboutSection() {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row" className={CELL}>Breakfast</th>
-            <td className={CELL}>7:30 - 9:30 AM</td>
-            <td className={CELL}>9:00 - 10:30 AM</td>
-          </tr>
-          <tr>
-            <th scope="row" className={CELL}>Lunch</th>
-            <td className={CELL}>1:00 - 3:30 PM</td>
-            <td className={CELL}>2:00 - 3:30 PM</td>
-          </tr>
-          <tr>
-            <th scope="row" className={CELL}>Dinner</th>
-            <td className={CELL}>7:30 - 9:30 PM</td>
-            <td className={CELL}>7:30 - 9:30 PM</td>
-          </tr>
+          {MEALS.map(({ type, label, weekday, weekend }) => (
+            <tr key={type}>
+              <th scope="row" className={CELL}>{label}</th>
+              <td className={CELL}>{weekday}</td>
+              <td className={CELL}>{weekend}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
+      <h2 className={HEADING}>About NUST Mess Menu</h2>
+      <p className="mb-3">
+        NUST Mess Menu shows the mess menu for NUST hostels: what&apos;s for breakfast, lunch and dinner{" "}
+        <Link href="/">today</Link> and the <Link href="/weekly">full menu for this week</Link>. Students can rate
+        meals, read reviews from other students and report when the food served doesn&apos;t match the menu.
+      </p>
     </details>
   );
 }

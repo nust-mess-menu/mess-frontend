@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
       { source: "/avatars/:path*", headers: publicAsset },
       { source: "/images/:path*", headers: publicAsset },
       {
-        source: "/:file(favicon.ico|favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-384x384.png|mstile-150x150.png|og-image.png|site.webmanifest|browserconfig.xml|robots.txt|sitemap.xml)",
+        source: "/:file(favicon.ico|favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-384x384.png|mstile-150x150.png|og-image.png|site.webmanifest|browserconfig.xml|robots.txt|sitemap.xml|llms.txt)",
         headers: publicAsset,
       },
       {

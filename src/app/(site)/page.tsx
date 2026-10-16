@@ -1,4 +1,6 @@
+import AboutSection from "@/components/site/AboutSection";
 import { TodayPage } from "@/components/site/MenuPage";
+import { fetchWeekSnapshot } from "@/lib/site/menuSnapshot";
 import { pageMetadata, websiteJsonLd } from "@/lib/site/seo";
 
 export const metadata = pageMetadata({
@@ -8,14 +10,15 @@ export const metadata = pageMetadata({
   path: "/",
 });
 
-export default function Home() {
+export default async function Home() {
+  const week = await fetchWeekSnapshot();
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c") }}
       />
-      <TodayPage />
+      <TodayPage about={<AboutSection week={week} />} />
     </>
   );
 }

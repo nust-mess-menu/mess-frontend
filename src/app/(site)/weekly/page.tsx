@@ -1,4 +1,6 @@
+import AboutSection from "@/components/site/AboutSection";
 import { WeeklyPage } from "@/components/site/MenuPage";
+import { fetchWeekSnapshot } from "@/lib/site/menuSnapshot";
 import { pageMetadata } from "@/lib/site/seo";
 
 export const metadata = pageMetadata({
@@ -8,6 +10,7 @@ export const metadata = pageMetadata({
   path: "/weekly",
 });
 
-export default function Weekly() {
-  return <WeeklyPage />;
+export default async function Weekly() {
+  const week = await fetchWeekSnapshot();
+  return <WeeklyPage about={<AboutSection week={week} />} />;
 }
