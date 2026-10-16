@@ -146,7 +146,13 @@ const worker = {
     // One render per minute per Cloudflare location, whatever the traffic
     const cacheKey = new Request(url.origin + url.pathname);
     const cached = await caches.default.match(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      // Cloudflare rewrites Cache-Control on cache hits to the zone's browser
+      // TTL (hours); this page changes at midnight, so set it again
+      const response = new Response(request.method === "HEAD" ? null : cached.body, cached);
+      response.headers.set("Cache-Control", `public, max-age=${CACHE_SECONDS}`);
+      return response;
+    }
 
     let response;
     try {
