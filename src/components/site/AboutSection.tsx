@@ -6,12 +6,17 @@ const CELL = "px-3 py-[6px] border-b border-[#e3e6ea] text-left";
 /**
  * Static text below the menu. The menu itself loads in the browser, so this
  * is what the prerendered HTML says about the page before any data arrives.
+ * Collapsed by default: search engines index the content of a closed
+ * <details>, whereas text hidden outright counts as hidden-text spam.
  * Timings match the Today and This Week views.
  */
 export default function AboutSection() {
   return (
-    <section className={`${CONTAINER} max-w-[860px]! mt-2 mb-6 text-[0.85rem] leading-[1.6] text-[#5c646f]`} aria-labelledby="about-heading">
-      <h2 id="about-heading" className="mb-2 text-left text-[1rem] font-semibold text-[#30363d]">
+    <details className={`${CONTAINER} max-w-[860px]! mt-2 mb-2 text-[0.85rem] leading-[1.6] text-[#5c646f]`}>
+      <summary className="w-fit mx-auto mb-2 text-[0.78rem] text-[#8b939d] cursor-pointer select-none hover:text-[#5c646f]">
+        About &amp; mess timings
+      </summary>
+      <h2 className="mb-2 text-left text-[1rem] font-semibold text-[#30363d]">
         About NUST Mess Menu
       </h2>
       <p className="mb-3">
@@ -46,6 +51,6 @@ export default function AboutSection() {
           </tr>
         </tbody>
       </table>
-    </section>
+    </details>
   );
 }
