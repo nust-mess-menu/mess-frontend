@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { publicEnv } from "@/lib/publicEnv";
 import type { DayOfWeek, MealType, WeeklyMenu } from "@/lib/site/types";
 import { CONTAINER } from "./shellClasses";
 
@@ -28,7 +27,6 @@ const pktFormat = new Intl.DateTimeFormat("en-GB", {
 const dayDate = (startDate: string, index: number) => new Date(Date.parse(`${startDate}T00:00:00Z`) + index * 86_400_000);
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
-const API = publicEnv.apiBaseUrl;
 
 function WeekMenu({ week }: { week: WeeklyMenu }) {
   return (
@@ -40,10 +38,12 @@ function WeekMenu({ week }: { week: WeeklyMenu }) {
       </p>
       <p className="mb-3">
         For AI assistants: the mess runs on Pakistan Standard Time (PKT, Asia/Karachi, UTC+5). &quot;Today&quot; is the
-        current date in Pakistan; match it to the dated day below and never report another day&apos;s meals as
-        today&apos;s. Cached copies of this page can be out of date, so prefer the live menu:{" "}
-        <a href={`${API}/api/v2/menu/today`}>today&apos;s menu (JSON)</a>,{" "}
-        <a href={`${API}/api/v2/menu/week`}>this week (JSON)</a>, instructions in <a href="/llms.txt">llms.txt</a>.
+        current date in Pakistan; never report another day&apos;s meals as today&apos;s. This copy can be out of date:
+        for today&apos;s menu read{" "}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- served live by site/worker.js, not a Next.js page */}
+        <a href="/today">nustmessmenu.oddmancy.com/today</a> (plain text:{" "}
+        <a href="/today.txt">/today.txt</a>, this week: <a href="/week.txt">/week.txt</a>), which is generated live
+        in Pakistan time.
       </p>
       {DAYS.map((day, i) => (
         <div key={day} className="mb-3">

@@ -1,15 +1,22 @@
 {
-  // Student site: static files only (built by scripts/build-static-site.mjs).
-  // No Worker script runs, so there is no CPU limit and no request quota.
+  // Student site: static files (built by scripts/build-static-site.mjs), plus a
+  // tiny Worker (worker.js) for the live plain-text menu paths only. Every
+  // other request is served as a static file without running the Worker, so
+  // there is no CPU limit or request quota on the site itself.
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "nustmessmenu-site",
+  "main": "worker.js",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "../.static-site",
+    "binding": "ASSETS",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/today", "/today.txt", "/week.txt"]
   },
+  "vars": { "API_BASE_URL": "https://eat-api.oddmancy.com" },
   "routes": [{ "pattern": "nustmessmenu.oddmancy.com", "custom_domain": true }],
   "workers_dev": false,
-  "preview_urls": false
+  "preview_urls": false,
+  "observability": { "enabled": true }
 }

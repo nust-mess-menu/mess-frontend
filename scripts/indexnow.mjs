@@ -6,7 +6,7 @@
  */
 const HOST = "nustmessmenu.oddmancy.com";
 const KEY = "95d9989cade75f221309a1a245a96d38";
-const PATHS = ["/", "/weekly"];
+const PATHS = ["/", "/today", "/weekly"];
 
 const res = await fetch("https://api.indexnow.org/indexnow", {
   method: "POST",

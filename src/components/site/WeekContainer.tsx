@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "@/lib/site/store";
 import type { DayOfWeek, DaySlots, MealType, MealWithRating } from "@/lib/site/types";
-import { SLOT_BADGE, useActiveMeal } from "@/lib/site/mealTime";
+import { SLOT_BADGE, activeMealAt, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
 import { cx, SLOT_BADGE_BASE, SLOT_BADGE_CLASS } from "./shellClasses";
 import { StarIcon, useMealRating } from "./useMealRating";
@@ -42,12 +42,9 @@ function getTimings(day: DayOfWeek): Record<MealType, string> {
   };
 }
 
-function getMondayOf(date = new Date()): Date {
-  const monday = new Date(date);
-  const weekday = date.getDay();
-  monday.setDate(date.getDate() + (weekday === 0 ? -6 : 1 - weekday));
-  monday.setHours(0, 0, 0, 0);
-  return monday;
+/** Day `index` (0 = Monday) of the week starting on `startDate` (YYYY-MM-DD, a Monday) */
+function weekDay(startDate: string, index: number): Date {
+  return new Date(Date.parse(`${startDate}T00:00:00Z`) + index * 86_400_000);
 }
 
 /** One-line "what's on" summary for the collapsed state. */
@@ -62,9 +59,11 @@ function getDayPreview(dayMenu: DaySlots | undefined): string {
 export default function WeekContainer({
   weeklyMenu,
   weekNumber,
+  startDate,
 }: {
   weeklyMenu: Record<DayOfWeek, DaySlots>;
   weekNumber: number;
+  startDate: string;
 }) {
   const [isActive, setIsActive] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState<{
@@ -77,18 +76,15 @@ export default function WeekContainer({
   const active = useActiveMeal();
   const { isSubmitting, submit, successModal } = useMealRating();
 
-  const { monday, weekRange, todayKey } = useMemo(() => {
-    const now = new Date();
-    const mondayDate = getMondayOf(now);
-    const sunday = new Date(mondayDate);
-    sunday.setDate(mondayDate.getDate() + 6);
-    const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long" };
+  // Dates come from the API's week and "today" from Pakistan time, so the
+  // page reads the same from any time zone (crawlers included)
+  const { weekRange, todayKey } = useMemo(() => {
+    const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", timeZone: "UTC" };
     return {
-      monday: mondayDate,
-      weekRange: `${mondayDate.toLocaleDateString("en-GB", options)} to ${sunday.toLocaleDateString("en-GB", options)}`,
-      todayKey: DAYS[now.getDay() === 0 ? 6 : now.getDay() - 1],
+      weekRange: `${weekDay(startDate, 0).toLocaleDateString("en-GB", options)} to ${weekDay(startDate, 6).toLocaleDateString("en-GB", options)}`,
+      todayKey: activeMealAt().day,
     };
-  }, []);
+  }, [startDate]);
 
   // Today starts open so the most relevant day needs no interaction
   const [expandedDays, setExpandedDays] = useState<DayOfWeek[]>(() => [todayKey]);
@@ -190,9 +186,7 @@ export default function WeekContainer({
     const isExpanded = expandedDays.includes(day);
     const isToday = day === todayKey;
 
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
-    const dateLabel = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    const dateLabel = weekDay(startDate, index).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
     const timings = getTimings(day);
     const panelId = `day-panel-${day}`;
 

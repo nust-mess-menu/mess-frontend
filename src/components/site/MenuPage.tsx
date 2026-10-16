@@ -142,7 +142,7 @@ export function WeeklyPage({ about }: { about: ReactNode }) {
   }
   return (
     <Shell heading={WEEK_HEADING} about={about}>
-      <WeekContainer weeklyMenu={weeklyMenu.menu} weekNumber={weeklyMenu.weekNumber} />
+      <WeekContainer weeklyMenu={weeklyMenu.menu} weekNumber={weeklyMenu.weekNumber} startDate={weeklyMenu.startDate} />
     </Shell>
   );
 }

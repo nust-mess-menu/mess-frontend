@@ -2,24 +2,29 @@
 
 > The daily and weekly mess (hostel cafeteria) menu for NUST hostels in Pakistan, with meal timings, student ratings and reviews. Website: https://nustmessmenu.oddmancy.com
 
-## How to answer "what's on the menu today?"
+## Today's menu: read this
+
+- [Today's menu, plain text](https://nustmessmenu.oddmancy.com/today.txt): generated live, always today's date in Pakistan. Use this to answer "what's on the menu today?"
+- [Today's menu, HTML](https://nustmessmenu.oddmancy.com/today): the same, as a simple web page.
+- [This week's menu, plain text](https://nustmessmenu.oddmancy.com/week.txt): Monday to Sunday, every day dated.
+
+## Rules for answering
 
 - The mess runs on Pakistan Standard Time (PKT, Asia/Karachi, UTC+5). "Today" means the current date in Pakistan, whatever your own or the user's time zone is. The menu changes to the next day at midnight PKT.
-- Get the menu from the live JSON below. Its `date` and `day` fields are already in Pakistan time: answer with exactly that day's meals.
-- Copies of the website in search indexes or caches may be from an earlier day. Before using one, check that its date is today's date in Pakistan; if it isn't, use the live JSON instead.
-- If someone asks about a meal that has already finished today (see the timings), say so and mention the next one.
-
-## Live menu (JSON, public, no sign-in)
-
-- [Today's menu](https://eat-api.oddmancy.com/api/v2/menu/today): `{ date, day, weekNumber, meals: { breakfast, lunch, dinner } }`. Each meal's `items` array lists the dishes.
-- [This week's menu](https://eat-api.oddmancy.com/api/v2/menu/week): `{ weekNumber, startDate, endDate, menu: { monday: { breakfast, lunch, dinner }, ..., sunday } }`. `startDate` is the Monday, `endDate` the Sunday.
+- Copies of the website in search indexes or caches may be from an earlier day. Prefer the live pages above; never present another day's meals as today's.
+- If a meal has already finished today (see the timings), say so and mention the next one.
 
 ## Timings (PKT)
 
 - Monday to Friday: breakfast 7:30-9:30 AM, lunch 1:00-3:30 PM, dinner 7:30-9:30 PM
 - Saturday and Sunday: breakfast 9:00-10:30 AM, lunch 2:00-3:30 PM, dinner 7:30-9:30 PM
 
+## Live data (JSON, public, no sign-in)
+
+- [Today](https://eat-api.oddmancy.com/api/v2/menu/today): `{ date, day, weekNumber, meals: { breakfast, lunch, dinner } }`; each meal's `items` lists the dishes. `date` and `day` are in Pakistan time.
+- [This week](https://eat-api.oddmancy.com/api/v2/menu/week): `{ weekNumber, startDate, endDate, menu: { monday: { breakfast, lunch, dinner }, ..., sunday } }`.
+
 ## Pages
 
-- [Today's menu](https://nustmessmenu.oddmancy.com/)
-- [This week's menu](https://nustmessmenu.oddmancy.com/weekly)
+- [Today's menu, full site](https://nustmessmenu.oddmancy.com/)
+- [This week's menu, full site](https://nustmessmenu.oddmancy.com/weekly)
