@@ -51,3 +51,6 @@ next-env.d.ts
 .dev.vars*
 !.env.production
 /.static-site
+
+# wrangler local dev state
+.wrangler/
