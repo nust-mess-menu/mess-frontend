@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   // Self-contained server bundle for small Docker images
   output: "standalone",
+  // /daily was a copy of the home page; the static site redirects it the same
+  // way (_redirects, written by scripts/build-static-site.mjs)
+  async redirects() {
+    return [{ source: "/daily", destination: "/", permanent: true }];
+  },
   async headers() {
     // Public files are not content-hashed, so they get a day of caching plus a
     // week of stale-while-revalidate (build assets under /_next/static are
@@ -38,7 +43,7 @@ const nextConfig: NextConfig = {
       { source: "/avatars/:path*", headers: publicAsset },
       { source: "/images/:path*", headers: publicAsset },
       {
-        source: "/:file(favicon.ico|favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-384x384.png|mstile-150x150.png|site.webmanifest|browserconfig.xml|robots.txt)",
+        source: "/:file(favicon.ico|favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-384x384.png|mstile-150x150.png|og-image.png|site.webmanifest|browserconfig.xml|robots.txt|sitemap.xml)",
         headers: publicAsset,
       },
       {

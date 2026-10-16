@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { fetchTodayMenu, fetchWeeklyMenu } from "@/lib/site/menuSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/site/store";
+import AboutSection from "./AboutSection";
 import AnnouncementPopup from "./AnnouncementPopup";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
@@ -11,12 +12,18 @@ import TodayContainer from "./TodayContainer";
 import WeekContainer from "./WeekContainer";
 import { ALERT_DANGER, ALERT_INFO, BTN_PRIMARY, CONTAINER, SHELL, SHELL_MAIN } from "./shellClasses";
 
-function Shell({ children }: { children: ReactNode }) {
+function Shell({ heading, children }: { heading: string; children: ReactNode }) {
   return (
     <div className={SHELL}>
       <AnnouncementPopup />
       <Navbar />
-      <main className={SHELL_MAIN}>{children}</main>
+      <main className={SHELL_MAIN}>
+        <h1 className={`${CONTAINER} mt-5 mb-0 text-center text-[1.6rem] font-semibold text-[#24292f] max-[561px]:text-[1.35rem]`}>
+          {heading}
+        </h1>
+        {children}
+        <AboutSection />
+      </main>
       <div className="shrink-0">
         <ReportProblem />
         <Footer />
@@ -65,6 +72,9 @@ function Empty({ label }: { label: string }) {
   );
 }
 
+const TODAY_HEADING = "NUST Mess Menu Today";
+const WEEK_HEADING = "NUST Mess Menu This Week";
+
 export function TodayPage() {
   const dispatch = useAppDispatch();
   const { todayMenu, todayLoading, todayError } = useAppSelector((state) => state.menu);
@@ -75,27 +85,27 @@ export function TodayPage() {
 
   if (todayError) {
     return (
-      <Shell>
+      <Shell heading={TODAY_HEADING}>
         <ErrorBox message={todayError} onRetry={() => dispatch(fetchTodayMenu())} />
       </Shell>
     );
   }
   if (!todayMenu) {
     return (
-      <Shell>
+      <Shell heading={TODAY_HEADING}>
         <Loading label="Loading today's menu..." />
       </Shell>
     );
   }
   if (!todayMenu.meals) {
     return (
-      <Shell>
+      <Shell heading={TODAY_HEADING}>
         <Empty label="No menu available for today." />
       </Shell>
     );
   }
   return (
-    <Shell>
+    <Shell heading={TODAY_HEADING}>
       <TodayContainer meals={todayMenu.meals} weekNumber={todayMenu.weekNumber} day={todayMenu.day} />
     </Shell>
   );
@@ -111,27 +121,27 @@ export function WeeklyPage() {
 
   if (weeklyError) {
     return (
-      <Shell>
+      <Shell heading={WEEK_HEADING}>
         <ErrorBox message={weeklyError} onRetry={() => dispatch(fetchWeeklyMenu())} />
       </Shell>
     );
   }
   if (!weeklyMenu) {
     return (
-      <Shell>
+      <Shell heading={WEEK_HEADING}>
         <Loading label="Loading weekly menu..." />
       </Shell>
     );
   }
   if (!weeklyMenu.menu) {
     return (
-      <Shell>
+      <Shell heading={WEEK_HEADING}>
         <Empty label="No weekly menu available." />
       </Shell>
     );
   }
   return (
-    <Shell>
+    <Shell heading={WEEK_HEADING}>
       <WeekContainer weeklyMenu={weeklyMenu.menu} weekNumber={weeklyMenu.weekNumber} />
     </Shell>
   );

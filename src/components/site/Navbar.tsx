@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { safePhotoUrl } from "@/lib/site/avatars";
 import { signOutUser } from "@/lib/site/authSlice";
@@ -22,6 +23,7 @@ export default function Navbar() {
   const [navOpen, setNavOpen] = useState(false);
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
+  const pathname = usePathname();
 
   // Other components (e.g. rating buttons) can ask for the login modal
   useEffect(() => {
@@ -43,10 +45,10 @@ export default function Navbar() {
         <div className="w-full px-3 mx-auto flex flex-wrap items-center justify-between min-[992px]:flex-nowrap">
           <Link href="/">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/android-chrome-192x192.png" alt="logo" height="70" width="70" />
+            <img src="/android-chrome-192x192.png" alt="NUST Mess Menu logo" height="70" width="70" />
           </Link>
           <Link className="py-[0.3125rem] mr-4 text-[1.25rem] text-black no-underline whitespace-nowrap hover:text-black" href="/">
-            Nust Mess Menu
+            NUST Mess Menu
           </Link>
           <button
             className="px-3 py-1 text-[1.25rem] leading-none text-black/65 bg-transparent border border-black/15 rounded-[0.375rem] transition-shadow duration-150 ease-in-out focus:outline-0 focus:shadow-[0_0_0_0.25rem] min-[992px]:hidden"
@@ -72,12 +74,12 @@ export default function Navbar() {
           >
             <ul className="flex flex-col pl-0 mb-2 mr-auto list-none min-[992px]:flex-row min-[992px]:mb-0">
               <li>
-                <Link className={NAV_LINK} aria-current="page" href="/daily">
+                <Link className={NAV_LINK} aria-current={pathname === "/" ? "page" : undefined} href="/">
                   Today
                 </Link>
               </li>
               <li>
-                <Link className={NAV_LINK} aria-current="page" href="/weekly">
+                <Link className={NAV_LINK} aria-current={pathname === "/weekly" ? "page" : undefined} href="/weekly">
                   This Week
                 </Link>
               </li>

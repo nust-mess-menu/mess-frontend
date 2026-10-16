@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { preconnect } from "react-dom";
 import { Analytics } from "@vercel/analytics/next";
 import Providers from "@/components/site/Providers";
+import { SITE_NAME, SITE_URL } from "@/lib/site/seo";
 
 import "@/styles/site.css";
 
@@ -11,16 +12,22 @@ import "@/styles/site.css";
 const inter = Inter({ weight: "400", subsets: ["latin", "latin-ext"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  // Absolute canonical URLs, so links from the old addresses consolidate here
-  metadataBase: new URL("https://nustmessmenu.oddmancy.com"),
-  alternates: { canonical: "/" },
-  title: "Mess Menu - NUST Hostels",
-  description: "Today's and this week's mess menu for NUST hostels, with ratings and reviews.",
+  // Absolute canonical and Open Graph URLs, so links from the old addresses
+  // consolidate here. Each page sets its own title, canonical and card
+  // (src/lib/site/seo.ts).
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: "Daily and weekly mess menu for NUST hostels, with meal timings, ratings and reviews.",
+  applicationName: SITE_NAME,
+  appleWebApp: { title: "Mess Menu" },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
   manifest: "/site.webmanifest",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
     ],
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },

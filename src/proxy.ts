@@ -74,7 +74,7 @@ export const config = {
     {
       // Pages only: skip API routes, build assets and public files
       source:
-        "/((?!api|_next/static|_next/image|favicon|android-chrome|apple-touch|mstile|images/|avatars/|site.webmanifest|browserconfig.xml|robots.txt).*)",
+        "/((?!api|_next/static|_next/image|favicon|android-chrome|apple-touch|mstile|images/|avatars/|og-image.png|site.webmanifest|browserconfig.xml|robots.txt|sitemap.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

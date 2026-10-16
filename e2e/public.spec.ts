@@ -10,7 +10,7 @@ test.describe("student site (signed out)", () => {
     await expect(rows.nth(0)).toContainText("Breakfast");
     await expect(page.locator(".meal-items").first()).not.toBeEmpty();
     await expect(page.getByRole("button", { name: "Rate" }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Nust Mess Menu" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "NUST Mess Menu", exact: true })).toBeVisible();
     await expect(page.getByText("© 2025 Muhammad Fateh")).toBeVisible();
   });
 
@@ -29,7 +29,7 @@ test.describe("student site (signed out)", () => {
 
   test("reviews are readable anonymously; rating asks for sign-in", async ({ page, cspViolations }) => {
     void cspViolations;
-    await page.goto("/daily");
+    await page.goto("/");
     await page.locator(".reviews-btn").first().click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByText("Meal reviews")).toBeVisible();
@@ -60,7 +60,7 @@ test("unknown URLs get the site's own 404 page", async ({ page, cspViolations })
   const res = await page.goto("/no/such/page");
   expect(res?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Nust Mess Menu" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "NUST Mess Menu", exact: true })).toBeVisible();
 });
 
 test("caching: HTML never cached, hashed assets immutable, public files cached a day", async ({ page, request, cspViolations }) => {
