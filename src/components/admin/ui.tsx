@@ -145,6 +145,7 @@ const paths = {
   library: "M3 3h3v10H3zM7 3h3v10H7zM11 3.5l2.5.7-2 9-2.5-.6",
   code: "M5.5 4.5L2 8l3.5 3.5M10.5 4.5L14 8l-3.5 3.5",
   chart: "M2.5 13.5h11M4.5 11V8M8 11V4.5M11.5 11V6.5",
+  megaphone: "M2.5 6.5v3h2l6 3.5v-10l-6 3.5zM4.5 9.5l1 4h1.5l-.5-3.5M13 6.5v3",
 } as const;
 
 export function Icon({ name, size = 16, className }: { name: keyof typeof paths; size?: number; className?: string }) {

@@ -4,7 +4,6 @@ import { useEffect, type ReactNode } from "react";
 import { fetchTodayMenu, fetchWeeklyMenu } from "@/lib/site/menuSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/site/store";
 import AnnouncementPopup from "./AnnouncementPopup";
-import Footer from "./Footer";
 import Navbar from "./Navbar";
 import ReportProblem from "./ReportProblem";
 import TodayContainer from "./TodayContainer";
@@ -25,7 +24,6 @@ function Shell({ heading, about, children }: { heading: string; about: ReactNode
       </main>
       <div className="shrink-0">
         <ReportProblem />
-        <Footer />
       </div>
     </div>
   );

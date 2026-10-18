@@ -5,11 +5,12 @@ import { adminFetch } from "./api";
 import BulkEditor from "./BulkEditor";
 import MealLibrary from "./MealLibrary";
 import MenuBoard from "./MenuBoard";
+import SpotlightPanel from "./SpotlightPanel";
 import StatsPanel from "./StatsPanel";
 import { DAYS, MEAL_TYPES, type Meal, type SlotRef, type Week, type WeekDishes, type WeekIds } from "./types";
 import { banner, btn, ConfirmDialog, cx, Icon, Spinner, ToastProvider, ui, useToast } from "./ui";
 
-type Tab = "menu" | "library" | "bulk" | "stats";
+type Tab = "menu" | "library" | "bulk" | "stats" | "spotlight";
 
 export interface AdminData {
   currentWeek: Week;
@@ -186,6 +187,7 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
               ["library", "library", `Meal library${data ? ` (${data.meals.length})` : ""}`],
               ["bulk", "code", "Bulk editor"],
               ["stats", "chart", "Stats"],
+              ["spotlight", "megaphone", "Spotlight"],
             ] as const
           ).map(([key, icon, label]) => (
             <button
@@ -234,6 +236,7 @@ function Dashboard({ sessionExpiresAt }: { sessionExpiresAt: string }) {
             {tab === "library" && <MealLibrary meals={data.meals} usage={usage} onChanged={load} />}
             {tab === "bulk" && <BulkEditor currentIds={data.ids} onChanged={load} />}
             {tab === "stats" && <StatsPanel />}
+            {tab === "spotlight" && <SpotlightPanel />}
           </div>
         )}
       </main>

@@ -6,6 +6,7 @@ import type { DayOfWeek, DaySlots, MealType, MealWithRating } from "@/lib/site/t
 import { SLOT_BADGE, activeMealAt, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
 import { cx, SLOT_BADGE_BASE, SLOT_BADGE_CLASS } from "./shellClasses";
+import Spotlight from "./Spotlight";
 import { StarIcon, useMealRating } from "./useMealRating";
 
 const SMALL_BTN =
@@ -266,6 +267,7 @@ export default function WeekContainer({
         >
           {DAYS.map((day, i) => renderDay(day, i))}
         </div>
+        <Spotlight slot="week" className="mt-5" />
       </div>
 
       {showRatingModal && selected && (

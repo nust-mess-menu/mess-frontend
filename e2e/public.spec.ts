@@ -11,7 +11,7 @@ test.describe("student site (signed out)", () => {
     await expect(page.locator(".meal-items").first()).not.toBeEmpty();
     await expect(page.getByRole("button", { name: "Rate" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "NUST Mess Menu", exact: true })).toBeVisible();
-    await expect(page.getByText("© 2025 Muhammad Fateh")).toBeVisible();
+    await expect(page.getByText("© 2025 Muhammad Fateh")).toHaveCount(0);
   });
 
   test("weekly page lists 7 days, today open, expand/collapse all", async ({ page, cspViolations }) => {

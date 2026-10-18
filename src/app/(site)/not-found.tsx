@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Footer from "@/components/site/Footer";
 import Navbar from "@/components/site/Navbar";
 import { ALERT_INFO, BTN_PRIMARY, CONTAINER, SHELL, SHELL_MAIN } from "@/components/site/shellClasses";
 
@@ -20,7 +19,6 @@ export default function NotFound() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

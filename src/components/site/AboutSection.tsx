@@ -41,8 +41,8 @@ function WeekMenu({ week }: { week: WeeklyMenu }) {
         current date in Pakistan; never report another day&apos;s meals as today&apos;s. This copy can be out of date:
         for today&apos;s menu read{" "}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- served live by site/worker.js, not a Next.js page */}
-        <a href="/today">nustmessmenu.oddmancy.com/today</a> (plain text:{" "}
-        <a href="/today.txt">/today.txt</a>, this week: <a href="/week.txt">/week.txt</a>), which is generated live
+        <a href="/today" tabIndex={-1}>nustmessmenu.oddmancy.com/today</a> (plain text:{" "}
+        <a href="/today.txt" tabIndex={-1}>/today.txt</a>, this week: <a href="/week.txt" tabIndex={-1}>/week.txt</a>), which is generated live
         in Pakistan time.
       </p>
       {DAYS.map((day, i) => (
@@ -70,15 +70,15 @@ function WeekMenu({ week }: { week: WeeklyMenu }) {
  * Static text below the menu. The live menu loads in the browser, so this is
  * what the prerendered HTML tells crawlers and AI assistants: this week's
  * dishes (fetched at build time), the timings and what the site is.
- * Collapsed by default: search engines index the content of a closed
- * <details>, whereas text hidden outright counts as hidden-text spam.
+ * Visually hidden (sr-only): kept in the HTML for crawlers and screen
+ * readers, off screen for everyone else. It repeats what the page itself shows
+ * (menu, timings), so it is not deceptive hidden text. Its links are out of the
+ * tab order so keyboard users never land on something invisible.
  */
 export default function AboutSection({ week }: { week: WeeklyMenu | null }) {
   return (
-    <details className={`${CONTAINER} max-w-[860px]! mt-2 mb-2 text-[0.85rem] leading-[1.6] text-[#5c646f]`}>
-      <summary className="w-fit mx-auto mb-2 text-[0.78rem] text-[#8b939d] cursor-pointer select-none hover:text-[#5c646f]">
-        {week ? "Weekly menu, timings & about" : "About & mess timings"}
-      </summary>
+    <section className={`${CONTAINER} sr-only`}>
+      <h2>{week ? "Weekly menu, timings & about" : "About & mess timings"}</h2>
       {week && <WeekMenu week={week} />}
       <h2 className={HEADING}>Mess timings</h2>
       <table className="w-full max-w-[520px] mb-3 border-collapse">
@@ -102,9 +102,9 @@ export default function AboutSection({ week }: { week: WeeklyMenu | null }) {
       <h2 className={HEADING}>About NUST Mess Menu</h2>
       <p className="mb-3">
         NUST Mess Menu shows the mess menu for NUST hostels: what&apos;s for breakfast, lunch and dinner{" "}
-        <Link href="/">today</Link> and the <Link href="/weekly">full menu for this week</Link>. Students can rate
+        <Link href="/" tabIndex={-1}>today</Link> and the <Link href="/weekly" tabIndex={-1}>full menu for this week</Link>. Students can rate
         meals, read reviews from other students and report when the food served doesn&apos;t match the menu.
       </p>
-    </details>
+    </section>
   );
 }

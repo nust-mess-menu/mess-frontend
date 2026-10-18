@@ -6,6 +6,7 @@ import type { DaySlots, MealType, MealWithRating } from "@/lib/site/types";
 import { SLOT_BADGE, useActiveMeal } from "@/lib/site/mealTime";
 import MealRatingModal from "./MealRatingModal";
 import { CONTAINER, cx, SLOT_BADGE_BASE, SLOT_BADGE_CLASS } from "./shellClasses";
+import Spotlight from "./Spotlight";
 import { StarIcon, useMealRating } from "./useMealRating";
 
 // Table cells (the original Bootstrap .table plus its own borders)
@@ -156,6 +157,8 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
             </tbody>
           </table>
         </div>
+        {/* Below the menu, never above it: the menu is what students came for */}
+        <Spotlight slot="today" className="-mt-6 mb-10" />
       </div>
 
       {showRatingModal && selected && (
