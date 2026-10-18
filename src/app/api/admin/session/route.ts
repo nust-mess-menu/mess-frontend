@@ -86,10 +86,9 @@ export async function POST(request: NextRequest) {
       // Held while in flight, so the delay also limits parallel guessing
       await sleep(failureDelayMs());
       if (after?.locked) return lockedResponse(after.lockedUntil!);
-      const left =
-        after?.remaining != null
-          ? ` ${after.remaining} more wrong attempt${after.remaining === 1 ? "" : "s"} will lock sign-in for 24 hours.`
-          : "";
+      // `remaining` wrong passwords are still allowed; the one after them locks
+      const toLock = after?.remaining != null ? after.remaining + 1 : null;
+      const left = toLock ? ` ${toLock} more wrong attempt${toLock === 1 ? "" : "s"} will lock sign-in for 24 hours.` : "";
       return jsonError(401, `Incorrect username or password.${left}`, "invalid_credentials");
     }
 

@@ -142,7 +142,8 @@ describe("24-hour admin sign-in lock", () => {
     backend({ locked: false, lockedUntil: null, remaining: 5 }, { failure: { locked: false, lockedUntil: null, remaining: 2 } });
     const res = await login("wrong");
     expect(res.status).toBe(401);
-    expect((await res.json()).message).toBe("Incorrect username or password. 2 more wrong attempts will lock sign-in for 24 hours.");
+    // 2 more are allowed, so the 3rd from now locks
+    expect((await res.json()).message).toBe("Incorrect username or password. 3 more wrong attempts will lock sign-in for 24 hours.");
     expect(JSON.parse(String((fetchMock.mock.calls[1] as [URL, RequestInit])[1].body))).toEqual({ result: "failure" });
   }, 20_000);
 
