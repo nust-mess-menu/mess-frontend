@@ -10,13 +10,30 @@ import TodayContainer from "./TodayContainer";
 import WeekContainer from "./WeekContainer";
 import { ALERT_DANGER, ALERT_INFO, BTN_PRIMARY, CONTAINER, SHELL, SHELL_MAIN } from "./shellClasses";
 
-function Shell({ heading, about, children }: { heading: string; about: ReactNode; children: ReactNode }) {
+/** `headingHidden`: the h1 stays for search engines and screen readers but is not shown */
+function Shell({
+  heading,
+  headingHidden = false,
+  about,
+  children,
+}: {
+  heading: string;
+  headingHidden?: boolean;
+  about: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className={SHELL}>
       <AnnouncementPopup />
       <Navbar />
       <main className={SHELL_MAIN}>
-        <h1 className={`${CONTAINER} mt-5 mb-0 text-center text-[1.6rem] font-semibold text-[#24292f] max-[561px]:text-[1.35rem]`}>
+        <h1
+          className={
+            headingHidden
+              ? "sr-only"
+              : `${CONTAINER} mt-5 mb-0 text-center text-[1.6rem] font-semibold text-[#24292f] max-[561px]:text-[1.35rem]`
+          }
+        >
           {heading}
         </h1>
         {children}
@@ -83,27 +100,27 @@ export function TodayPage({ about }: { about: ReactNode }) {
 
   if (todayError) {
     return (
-      <Shell heading={TODAY_HEADING} about={about}>
+      <Shell heading={TODAY_HEADING} headingHidden about={about}>
         <ErrorBox message={todayError} onRetry={() => dispatch(fetchTodayMenu())} />
       </Shell>
     );
   }
   if (!todayMenu) {
     return (
-      <Shell heading={TODAY_HEADING} about={about}>
+      <Shell heading={TODAY_HEADING} headingHidden about={about}>
         <Loading label="Loading today's menu..." />
       </Shell>
     );
   }
   if (!todayMenu.meals) {
     return (
-      <Shell heading={TODAY_HEADING} about={about}>
+      <Shell heading={TODAY_HEADING} headingHidden about={about}>
         <Empty label="No menu available for today." />
       </Shell>
     );
   }
   return (
-    <Shell heading={TODAY_HEADING} about={about}>
+    <Shell heading={TODAY_HEADING} headingHidden about={about}>
       <TodayContainer meals={todayMenu.meals} weekNumber={todayMenu.weekNumber} day={todayMenu.day} />
     </Shell>
   );

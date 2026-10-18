@@ -131,7 +131,7 @@ export default function TodayContainer({ meals, day }: { meals: DaySlots; weekNu
   return (
     <>
       <div className={`${CONTAINER} my-6`}>
-        <h3 className="text-center">{currentFormattedDate}</h3>
+        <h3 className="text-center text-[1.35rem] max-[561px]:text-[1.15rem]">{currentFormattedDate}</h3>
         <div className={cx("table-container", isActive && "active")}>
           <table
             className="w-full mt-6 mb-12 border-collapse caption-bottom align-top text-[#212529] bg-[#f8f9fa] rounded-[0.375rem] shadow-[0_0.5rem_1rem_rgba(33,37,41,0.15)]"
