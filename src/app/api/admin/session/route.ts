@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { checkSameOrigin, isAdminHost, jsonError, readJsonBody, readSession } from "@/lib/server/admin";
+import { getAdminLock, lockedResponse, reportSignIn } from "@/lib/server/adminLock";
 import { checkAdminCredentials } from "@/lib/server/credentials";
 import { serverEnv } from "@/lib/server/env";
 import { clientIp, failureDelayMs, globalFailures, loginLimiter } from "@/lib/server/rateLimit";
@@ -21,6 +22,9 @@ const MAX_IN_FLIGHT = 8;
 let inFlight = 0;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const unavailable = () =>
+  jsonError(503, "Sign-in is unavailable right now: the menu server could not be reached. Please try again.", "lock_unavailable");
 
 /** GET /api/admin/session - is there a valid admin session? */
 export async function GET(request: NextRequest) {
@@ -61,6 +65,13 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) return parsed.response;
     const body = loginBody.safeParse(parsed.body);
 
+    // The 24-hour lock (shared by every instance, kept by the backend) is
+    // checked before the password, so a locked console refuses even the right
+    // one. Fails closed: if the lock can't be read, nobody signs in.
+    const lock = await getAdminLock();
+    if (!lock) return unavailable();
+    if (lock.locked) return lockedResponse(lock.lockedUntil!);
+
     const valid =
       body.success &&
       checkAdminCredentials(body.data.username, body.data.password, {
@@ -71,10 +82,21 @@ export async function POST(request: NextRequest) {
     if (!valid) {
       globalFailures.record("all");
       console.warn("[admin] failed sign-in", { ip: ip ?? "unknown" });
+      const after = await reportSignIn("failure");
       // Held while in flight, so the delay also limits parallel guessing
       await sleep(failureDelayMs());
-      return jsonError(401, "Incorrect username or password.", "invalid_credentials");
+      if (after?.locked) return lockedResponse(after.lockedUntil!);
+      const left =
+        after?.remaining != null
+          ? ` ${after.remaining} more wrong attempt${after.remaining === 1 ? "" : "s"} will lock sign-in for 24 hours.`
+          : "";
+      return jsonError(401, `Incorrect username or password.${left}`, "invalid_credentials");
     }
+
+    // Clears the failure count; refuses if a lock landed in the meantime
+    const after = await reportSignIn("success");
+    if (!after) return unavailable();
+    if (after.locked) return lockedResponse(after.lockedUntil!);
 
     if (ip) loginLimiter.reset(ip);
     const { token, payload } = sealSession(env.sessionSecret);

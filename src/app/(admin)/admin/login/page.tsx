@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import AdminLogin from "@/components/admin/AdminLogin";
+import { getAdminLock } from "@/lib/server/adminLock";
 import { serverEnv } from "@/lib/server/env";
 import { requestHost } from "@/lib/server/rateLimit";
 import { openSession, sessionCookieName } from "@/lib/server/session";
@@ -15,9 +16,11 @@ export default async function AdminLoginPage() {
   if (openSession(env.sessionSecret, (await cookies()).get(sessionCookieName(env.isProduction))?.value)) {
     redirect("/admin");
   }
+  // Show the 24-hour lock before anyone types a password
+  const lock = await getAdminLock();
   return (
     <Suspense>
-      <AdminLogin />
+      <AdminLogin initialLockedUntil={lock?.locked ? lock.lockedUntil : null} />
     </Suspense>
   );
 }

@@ -38,7 +38,7 @@ describe("POST /api/admin/session (sign in)", () => {
     return POST(req("/api/admin/session", { method: "POST", body, headers }));
   };
 
-  it("sets a hardened session cookie on success and never calls the backend", async () => {
+  it("sets a hardened session cookie on success and only consults the backend's sign-in lock", async () => {
     const res = await login({ username: ENV.ADMIN_USERNAME, password: ENV.ADMIN_PASSWORD });
     expect(res.status).toBe(200);
     const cookie = res.headers.get("set-cookie")!;
@@ -48,7 +48,9 @@ describe("POST /api/admin/session (sign in)", () => {
     expect(cookie).toMatch(/SameSite=strict/i);
     expect(cookie).toMatch(/Path=\//);
     expect(cookie).not.toMatch(/Domain=/i);
-    expect(fetchMock).not.toHaveBeenCalled();
+    const calls = fetchMock.mock.calls.map(([url, init]) => `${(init as RequestInit).method} ${new URL(String(url)).pathname}`);
+    expect(calls).toEqual(["GET /api/admin/lock", "POST /api/admin/lock"]);
+    expect(JSON.parse(String((fetchMock.mock.calls[1] as [URL, RequestInit])[1].body))).toEqual({ result: "success" });
   });
 
   it("rejects wrong credentials, then locks out the IP after 5 failures", async () => {
@@ -102,6 +104,67 @@ describe("POST /api/admin/session (sign in)", () => {
     expect(res.headers.get("clear-site-data")).toBe('"cache"');
     // A copy of the cookie taken before sign-out no longer works
     expect((await GET(req("/api/admin/week", { headers: cookie }))).status).toBe(401);
+  });
+});
+
+describe("24-hour admin sign-in lock", () => {
+  const IP = "7.7.7.7";
+  const LOCKED_UNTIL = "2026-10-19T10:00:00.000Z";
+  const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+  const login = async (password: string) => {
+    const { POST } = await import("@/app/api/admin/session/route");
+    return POST(req("/api/admin/session", { method: "POST", body: { username: ENV.ADMIN_USERNAME, password }, headers: { ...sameOrigin, "x-forwarded-for": IP } }));
+  };
+  /** Backend stub: GET returns `current`, POST returns `after` (per result). */
+  const backend = (current: object, after: Partial<Record<"success" | "failure", object>> = {}) =>
+    fetchMock.mockImplementation(async (_url: URL, init: RequestInit) => {
+      if (init.method === "GET") return json({ success: true, ...current });
+      const { result } = JSON.parse(String(init.body)) as { result: "success" | "failure" };
+      return json({ success: true, ...(after[result] ?? { locked: false, lockedUntil: null, remaining: 5 }) });
+    });
+  afterEach(() => loginLimiter.reset(IP));
+
+  it("refuses even the right password while locked, and says how to unlock", async () => {
+    backend({ locked: true, lockedUntil: LOCKED_UNTIL, remaining: 0 });
+    const res = await login(ENV.ADMIN_PASSWORD);
+    expect(res.status).toBe(423);
+    expect(res.headers.get("set-cookie")).toBeNull();
+    const body = await res.json();
+    expect(body).toMatchObject({ code: "admin_locked", lockedUntil: LOCKED_UNTIL });
+    expect(body.message).toContain("Mon 19 Oct, 15:00");
+    expect(body.message).toContain("config/admin-lock");
+    expect(body.message).toContain("npm run admin:unlock");
+    // Nothing is recorded while locked
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports wrong passwords and says how many attempts are left", async () => {
+    backend({ locked: false, lockedUntil: null, remaining: 5 }, { failure: { locked: false, lockedUntil: null, remaining: 2 } });
+    const res = await login("wrong");
+    expect(res.status).toBe(401);
+    expect((await res.json()).message).toBe("Incorrect username or password. 2 more wrong attempts will lock sign-in for 24 hours.");
+    expect(JSON.parse(String((fetchMock.mock.calls[1] as [URL, RequestInit])[1].body))).toEqual({ result: "failure" });
+  }, 20_000);
+
+  it("locks on the attempt that crosses the limit", async () => {
+    backend({ locked: false, lockedUntil: null, remaining: 0 }, { failure: { locked: true, lockedUntil: LOCKED_UNTIL, remaining: 0 } });
+    const res = await login("wrong");
+    expect(res.status).toBe(423);
+    expect((await res.json()).lockedUntil).toBe(LOCKED_UNTIL);
+  }, 20_000);
+
+  it("refuses the right password if a lock landed in the meantime", async () => {
+    backend({ locked: false, lockedUntil: null, remaining: 1 }, { success: { locked: true, lockedUntil: LOCKED_UNTIL, remaining: 0 } });
+    const res = await login(ENV.ADMIN_PASSWORD);
+    expect(res.status).toBe(423);
+    expect(res.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("fails closed when the lock can't be read", async () => {
+    fetchMock.mockRejectedValue(new TypeError("fetch failed"));
+    const res = await login(ENV.ADMIN_PASSWORD);
+    expect(res.status).toBe(503);
+    expect(res.headers.get("set-cookie")).toBeNull();
   });
 });
 
