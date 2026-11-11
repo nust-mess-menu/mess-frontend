@@ -17,6 +17,11 @@ concurrency:
   group: deploy-site
   cancel-in-progress: false
 
+# actions: write lets the last step re-enable this workflow (keep-alive)
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -32,3 +37,11 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # GitHub disables scheduled workflows after 60 days without a commit.
+      # Re-enabling it through the API resets that timer, so the nightly
+      # rebuild keeps running even when nobody pushes for months.
+      - name: Keep the schedule alive
+        if: always()
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/deploy-site.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
