@@ -97,4 +97,26 @@ writeFileSync(join(OUT, "_headers"), headers);
 // /daily was a duplicate of the home page: one URL per page for search engines
 writeFileSync(join(OUT, "_redirects"), "/daily / 301\n/daily/ / 301\n/weekly/ /weekly 301\n");
 
+// Sitemap with real <lastmod> dates (Google uses lastmod and ignores
+// changefreq/priority). The nightly rebuild bakes in the day's menu, so the
+// home page and /today change every day in Pakistan; /weekly changes when the
+// week does (Monday). Replaces public/sitemap.xml in the deployed site.
+const pktToday = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(new Date()); // YYYY-MM-DD
+const todayUtc = new Date(`${pktToday}T00:00:00Z`);
+const pktMonday = new Date(todayUtc.getTime() - ((todayUtc.getUTCDay() + 6) % 7) * 86_400_000).toISOString().slice(0, 10);
+const SITE = "https://nustmessmenu.oddmancy.com";
+const sitemapUrls = [
+  ["/", pktToday],
+  ["/today", pktToday],
+  ["/weekly", pktMonday],
+];
+writeFileSync(
+  join(OUT, "sitemap.xml"),
+  `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapUrls.map(([path, lastmod]) => `  <url><loc>${SITE}${path}</loc><lastmod>${lastmod}</lastmod></url>`).join("\n")}
+</urlset>
+`
+);
+
 console.log(`build-static-site: ${Object.keys(PAGES).length} pages, ${hashes.size} inline script hashes -> .static-site/`);
