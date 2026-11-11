@@ -12,7 +12,9 @@ moved=()
 for f in .env .env.local .env.production.local; do
   if [[ -f "$f" ]]; then mv "$f" "$f.cf-build-bak"; moved+=("$f"); fi
 done
-restore() { for f in "${moved[@]:-}"; do [[ -n "$f" ]] && mv "$f.cf-build-bak" "$f"; done; }
+# Must end with status 0: an EXIT trap's status becomes the script's, and with
+# no .env files to restore (CI) the `[[ -n ]]` test would fail the build
+restore() { for f in "${moved[@]:-}"; do if [[ -n "$f" ]]; then mv "$f.cf-build-bak" "$f"; fi; done; }
 trap restore EXIT
 
 # The menu baked into the student pages (src/lib/site/menuSnapshot.ts) must be
