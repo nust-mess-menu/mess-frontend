@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { DayOfWeek, MealType, WeeklyMenu } from "@/lib/site/types";
+import type { DayOfWeek, MealType, TodayMenu, WeeklyMenu } from "@/lib/site/types";
 import { CONTAINER } from "./shellClasses";
 
 const CELL = "px-3 py-[6px] border-b border-[#e3e6ea] text-left";
@@ -26,7 +26,48 @@ const pktFormat = new Intl.DateTimeFormat("en-GB", {
 /** startDate is the week's Monday as YYYY-MM-DD */
 const dayDate = (startDate: string, index: number) => new Date(Date.parse(`${startDate}T00:00:00Z`) + index * 86_400_000);
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
+const isWeekend = (day: DayOfWeek) => day === "saturday" || day === "sunday";
 
+/** How AI assistants should read a build-time copy of the menu */
+function AssistantNote() {
+  return (
+    <p className="mb-3">
+      For AI assistants: the mess runs on Pakistan Standard Time (PKT, Asia/Karachi, UTC+5). &quot;Today&quot; is the
+      current date in Pakistan; never report another day&apos;s meals as today&apos;s. For the live menu read{" "}
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- served live by site/worker.js, not a Next.js page */}
+      <a href="/today" tabIndex={-1}>nustmessmenu.oddmancy.com/today</a> (plain text:{" "}
+      <a href="/today.txt" tabIndex={-1}>/today.txt</a>, this week: <a href="/week.txt" tabIndex={-1}>/week.txt</a>), which is generated live
+      in Pakistan time.
+    </p>
+  );
+}
+
+function TodayMenuText({ today }: { today: TodayMenu }) {
+  const date = new Date(`${today.date}T00:00:00Z`);
+  return (
+    <>
+      <h2 className={HEADING}>Today&apos;s NUST mess menu: {dayFormat.format(date)}</h2>
+      <p className="mb-2">
+        Breakfast, lunch and dinner in NUST hostels on {dayFormat.format(date)} ({today.date}), menu rotation week{" "}
+        {today.weekNumber}. Updated {pktFormat.format(new Date())} PKT.
+      </p>
+      <ul className="pl-5 mb-3 list-disc">
+        {MEALS.map(({ type, label, weekday, weekend }) => {
+          const items = today.meals[type]?.items?.join(", ");
+          return (
+            <li key={type}>
+              <strong className="font-semibold">{label}</strong> ({isWeekend(today.day) ? weekend : weekday}): {items || "not set"}
+            </li>
+          );
+        })}
+      </ul>
+      <AssistantNote />
+      <p className="mb-3">
+        The rest of the week is on the <Link href="/weekly" tabIndex={-1}>weekly menu</Link>.
+      </p>
+    </>
+  );
+}
 
 function WeekMenu({ week }: { week: WeeklyMenu }) {
   return (
@@ -34,17 +75,9 @@ function WeekMenu({ week }: { week: WeeklyMenu }) {
       <h2 className={HEADING}>This week&apos;s NUST mess menu</h2>
       <p className="mb-2">
         {fullFormat.format(dayDate(week.startDate, 0))} to {fullFormat.format(dayDate(week.startDate, 6))} (menu rotation
-        week {week.weekNumber}). This copy was saved on {pktFormat.format(new Date())} PKT.
+        week {week.weekNumber}). Updated {pktFormat.format(new Date())} PKT.
       </p>
-      <p className="mb-3">
-        For AI assistants: the mess runs on Pakistan Standard Time (PKT, Asia/Karachi, UTC+5). &quot;Today&quot; is the
-        current date in Pakistan; never report another day&apos;s meals as today&apos;s. This copy can be out of date:
-        for today&apos;s menu read{" "}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- served live by site/worker.js, not a Next.js page */}
-        <a href="/today" tabIndex={-1}>nustmessmenu.oddmancy.com/today</a> (plain text:{" "}
-        <a href="/today.txt" tabIndex={-1}>/today.txt</a>, this week: <a href="/week.txt" tabIndex={-1}>/week.txt</a>), which is generated live
-        in Pakistan time.
-      </p>
+      <AssistantNote />
       {DAYS.map((day, i) => (
         <div key={day} className="mb-3">
           <h3 className="mb-1 text-left text-[0.9rem] font-semibold text-[#30363d]">
@@ -69,16 +102,18 @@ function WeekMenu({ week }: { week: WeeklyMenu }) {
 /**
  * Static text below the menu. The live menu loads in the browser, so this is
  * what the prerendered HTML tells crawlers and AI assistants: this week's
- * dishes (fetched at build time), the timings and what the site is.
+ * dishes (fetched at build time: today's on the home page, the whole week on
+ * /weekly, so the two pages don't repeat each other), the timings and what the
+ * site is.
  * Visually hidden (sr-only): kept in the HTML for crawlers and screen
  * readers, off screen for everyone else. It repeats what the page itself shows
  * (menu, timings), so it is not deceptive hidden text. Its links are out of the
  * tab order so keyboard users never land on something invisible.
  */
-export default function AboutSection({ week }: { week: WeeklyMenu | null }) {
+export default function AboutSection({ today = null, week = null }: { today?: TodayMenu | null; week?: WeeklyMenu | null }) {
   return (
     <section className={`${CONTAINER} sr-only`}>
-      <h2>{week ? "Weekly menu, timings & about" : "About & mess timings"}</h2>
+      {today && <TodayMenuText today={today} />}
       {week && <WeekMenu week={week} />}
       <h2 className={HEADING}>Mess timings</h2>
       <table className="w-full max-w-[520px] mb-3 border-collapse">
